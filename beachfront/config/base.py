@@ -12,16 +12,19 @@
 # specific language governing permissions and limitations under the License.
 
 import os
+from datetime import timedelta
 
-from . import _utils
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-_config = os.getenv('CONFIG')
+DOMAIN = os.getenv('DOMAIN')
 
-print('\nUsing config "{}"\n'.format(_config))
+SESSION_TTL = timedelta(minutes=30)
 
-if _config == 'development':
-    from .development import *
-elif _config == 'production':
-    from .production import *
+JOB_WORKER_INTERVAL = timedelta(seconds=60)
+JOB_TTL             = timedelta(hours=2)
 
-_utils.validate()
+PIAZZA_SCHEME  = os.getenv('PIAZZA_SCHEME')
+PIAZZA_HOST    = os.getenv('PIAZZA_HOST')
+PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
+
+STATIC_URL_PATH = os.getenv('STATIC_URL', '/static/')
