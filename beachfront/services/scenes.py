@@ -20,8 +20,8 @@ from typing import Optional
 import dateutil.parser
 import requests
 
-from bfapi import db
 from bfapi.config import CATALOG, DOMAIN
+from beachfront import db
 
 
 PATTERN_SCENE_ID = re.compile(r'^(planetscope|rapideye):[\w_-]+$')

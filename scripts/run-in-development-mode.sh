@@ -17,7 +17,7 @@ if [ "${PORT}" == "" ]; then
     exit 1
 fi
 
-gunicorn bfapi.server:server \
+gunicorn beachfront.server:server \
   -b localhost:${PORT} \
   --threads 5 \
   --keyfile .dev/ssl-certificate.key \

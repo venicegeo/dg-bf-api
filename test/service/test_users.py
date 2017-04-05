@@ -21,8 +21,8 @@ import requests_mock as rm
 
 from test import helpers
 
-from bfapi.db import DatabaseError
-from bfapi.service import users
+from beachfront.db import DatabaseError
+from beachfront.services import users
 
 API_KEY = '0123456789abcdef0123456789abcdef'
 

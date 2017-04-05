@@ -13,7 +13,7 @@
 
 import unittest.mock
 
-from bfapi import db
+from beachfront import db
 
 
 class GetConnectionTest(unittest.TestCase):

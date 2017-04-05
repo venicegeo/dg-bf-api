@@ -19,8 +19,8 @@ import dateutil.tz
 import flask
 
 from bfapi.config import CATALOG, GEOSERVER_HOST
-from bfapi.db import DatabaseError
-from bfapi.service import algorithms as _algorithms, jobs as _jobs, productlines as _productlines, scenes as _scenes
+from beachfront.db import DatabaseError
+from beachfront.services import algorithms as _algorithms, jobs as _jobs, productlines as _productlines, scenes as _scenes
 
 
 #

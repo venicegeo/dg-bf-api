@@ -14,10 +14,10 @@
 import flask
 from flask_cors import CORS
 
-from bfapi import config, db, middleware, routes, service
-from bfapi import DEBUG_MODE, MUTE_LOGS
 
 FALLBACK_MIMETYPE = 'text/plain'
+from beachfront import config, db, middleware, routes, services
+from beachfront import DEBUG_MODE, MUTE_LOGS
 
 
 def apply_middlewares(app: flask.Flask):

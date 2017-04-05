@@ -11,7 +11,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-from bfapi.db import Connection, ResultProxy
+from beachfront.db import Connection, ResultProxy
 import logging
 
 def select_user(

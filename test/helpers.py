@@ -19,7 +19,7 @@ from typing import List
 import sqlalchemy.engine as _sqlalchemyengine
 import sqlalchemy.exc as _sqlalchemyexc
 
-import bfapi.db
+import beachfront.db
 
 
 def create_database_error():
@@ -70,15 +70,15 @@ class MockDBConnection(unittest.mock.Mock):
         return transaction
 
     def install(self):
-        self._original_get_connection = bfapi.db.get_connection
-        self._original_print_diagnostics = bfapi.db.print_diagnostics
-        bfapi.db.get_connection = lambda: self
-        bfapi.db.print_diagnostics = lambda _: None
+        self._original_get_connection = beachfront.db.get_connection
+        self._original_print_diagnostics = beachfront.db.print_diagnostics
+        beachfront.db.get_connection = lambda: self
+        beachfront.db.print_diagnostics = lambda _: None
 
     def destroy(self):
         if self._original_get_connection:
-            bfapi.db.get_connection = self._original_get_connection
-            bfapi.db.print_diagnostics = self._original_print_diagnostics
+            beachfront.db.get_connection = self._original_get_connection
+            beachfront.db.print_diagnostics = self._original_print_diagnostics
 
     @property
     def executed(self):

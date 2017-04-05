@@ -13,7 +13,7 @@
 
 import unittest
 
-from bfapi.routes import v0 as routes
+from beachfront.routes import v0 as routes
 
 
 class GetAlgorithmTest(unittest.TestCase):

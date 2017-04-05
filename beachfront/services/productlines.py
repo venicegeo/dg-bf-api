@@ -19,7 +19,7 @@ import re
 from datetime import datetime, date
 from typing import List, Tuple
 
-from bfapi import db, service
+from beachfront import db, services
 
 FORMAT_ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 STATUS_ACTIVE = 'Active'
@@ -104,7 +104,7 @@ def create_productline(
         user_id: str) -> ProductLine:
     log = logging.getLogger(__name__)
     log.info('Productline service create productline', action='service productline create productline')
-    algorithm = service.algorithms.get(algorithm_id)
+    algorithm = services.algorithms.get(algorithm_id)
     productline_id = _create_id()
     log.info('Creating product line <%s>', productline_id)
     conn = db.get_connection()

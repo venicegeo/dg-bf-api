@@ -14,11 +14,11 @@
 import logging
 import re
 import uuid
+from datetime import datetime
 
 import requests
+from beachfront import db
 
-from datetime import datetime
-from bfapi import db
 from bfapi.config import DOMAIN, GEOAXIS, GEOAXIS_CLIENT_ID, GEOAXIS_SECRET
 
 TIMEOUT = 12

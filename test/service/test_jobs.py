@@ -20,8 +20,8 @@ import requests_mock as rm
 
 from test import helpers
 
-from bfapi.db import DatabaseError
-from bfapi.service import algorithms, jobs, piazza, scenes
+from beachfront.db import DatabaseError
+from beachfront.services import algorithms, jobs, piazza, scenes
 
 ONE_WEEK = timedelta(days=7.0, hours=12, minutes=34, seconds=56)
 LAST_WEEK = datetime.utcnow() - ONE_WEEK

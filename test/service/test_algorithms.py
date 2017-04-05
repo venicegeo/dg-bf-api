@@ -14,7 +14,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from bfapi.service import algorithms, piazza
+from beachfront.services import algorithms, piazza
 
 
 @patch('bfapi.service.piazza.get_services')

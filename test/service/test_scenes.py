@@ -21,8 +21,8 @@ from requests import ConnectionError
 
 from test import helpers
 
-from bfapi.db import DatabaseError
-from bfapi.service import scenes
+from beachfront.db import DatabaseError
+from beachfront.services import scenes
 
 
 @rm.Mocker()
@@ -100,7 +100,7 @@ class ActivateSceneTest(unittest.TestCase):
         m.get('/planet/activate/planetscope/test-scene-id', status_code=404, text='wat')
         with self.assertRaises(scenes.NotFound):
             scenes.activate(scene, 'test-planet-api-key', 'test-user-id')
-            
+
     def test_throws_when_not_permitted(self, m: rm.Mocker):
         scene = create_scene()
         m.get('/planet/activate/planetscope/test-scene-id', status_code=401, text='oopsie')
@@ -219,7 +219,7 @@ class GetSceneTest(unittest.TestCase):
         self.mock_requests.get('/planet/planetscope/test-scene-id', status_code=404, text='wat')
         with self.assertRaises(scenes.NotFound):
             scenes.get('planetscope:test-scene-id', 'test-planet-api-key')
-            
+
     def test_throws_when_not_permitted(self):
         self.mock_requests.get('/planet/planetscope/test-scene-id', status_code=401, text='oopsie')
         with self.assertRaises(scenes.NotPermitted):

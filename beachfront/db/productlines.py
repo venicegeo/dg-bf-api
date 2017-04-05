@@ -13,7 +13,7 @@
 
 from datetime import date
 import logging
-from bfapi.db import Connection, ResultProxy
+from beachfront.db import Connection, ResultProxy
 
 
 def delete_productline(

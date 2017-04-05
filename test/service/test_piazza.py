@@ -17,7 +17,7 @@ import unittest.mock
 from requests import ConnectionError, Response
 from requests_mock import Mocker
 
-from bfapi.service import piazza
+from beachfront.services import piazza
 
 @Mocker()
 class CreateTriggerTest(unittest.TestCase):

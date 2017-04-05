@@ -13,7 +13,7 @@
 
 from datetime import datetime
 import logging
-from bfapi.db import Connection, ResultProxy
+from beachfront.db import Connection, ResultProxy
 
 def delete_job_user(
         conn: Connection,

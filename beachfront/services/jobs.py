@@ -18,9 +18,9 @@ import time
 from datetime import datetime, timedelta
 from typing import List
 
-from bfapi import db
-from bfapi.config import JOB_TTL, JOB_WORKER_INTERVAL
-from bfapi.service import algorithms, scenes, piazza
+from beachfront import db
+from beachfront.config import JOB_TTL, JOB_WORKER_INTERVAL
+from beachfront.services import algorithms, scenes, piazza
 
 FORMAT_DTG = '%Y-%m-%d-%H-%M'
 FORMAT_TIME = '%TZ'

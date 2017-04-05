@@ -18,7 +18,7 @@ from unittest.mock import patch
 import requests_mock as rm
 from requests import ConnectionError
 
-from bfapi.service import geoserver
+from beachfront.services import geoserver
 
 XMLNS = {'sld': 'http://www.opengis.net/sld'}
 

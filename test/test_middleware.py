@@ -18,8 +18,8 @@ import flask
 
 from test import helpers
 
-from bfapi.service import users
-from bfapi import middleware
+from beachfront.services import users
+from beachfront import middleware
 
 AUTHORIZED_ORIGINS = (
     'https://beachfront.geointservices.io',

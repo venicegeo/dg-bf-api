@@ -14,7 +14,7 @@
 import logging
 from typing import List
 
-from bfapi.service import piazza
+from beachfront.services import piazza
 
 
 #

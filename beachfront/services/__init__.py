@@ -11,15 +11,4 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import os
-
-import bfapi.logger
-
-DEBUG_MODE = os.getenv('DEBUG_MODE') == '1'
-MUTE_LOGS = os.getenv('MUTE_LOGS') == '1'
-
-
-bfapi.logger.init(
-    debug=DEBUG_MODE,
-    muted=MUTE_LOGS,
-)
+from beachfront.services import piazza, algorithms, geoserver, scenes, jobs, productlines  # Order matters here

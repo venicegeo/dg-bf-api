@@ -14,8 +14,8 @@
 import unittest
 from unittest.mock import call, patch
 
-from bfapi import routes
-from bfapi.service import users
+from beachfront import routes
+from beachfront.services import users
 
 
 @patch('flask.jsonify', side_effect=dict)

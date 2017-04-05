@@ -15,7 +15,7 @@ import os
 import unittest
 from datetime import timedelta
 
-from bfapi import config
+from beachfront import config
 
 
 class ConfigurationValueTest(unittest.TestCase):

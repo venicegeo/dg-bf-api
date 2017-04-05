@@ -17,9 +17,9 @@ from unittest.mock import patch, MagicMock
 
 from test import helpers
 
-from bfapi.db import DatabaseError
-from bfapi.service import productlines
-from bfapi.service.algorithms import Algorithm, NotFound, ValidationError
+from beachfront.db import DatabaseError
+from beachfront.services import productlines
+from beachfront.services.algorithms import Algorithm, NotFound, ValidationError
 
 DATE_START = datetime.utcfromtimestamp(1400000000)
 DATE_STOP = datetime.utcfromtimestamp(1500000000)

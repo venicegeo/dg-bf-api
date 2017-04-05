@@ -15,7 +15,7 @@ import logging
 
 import requests
 
-from bfapi.config import GEOSERVER_HOST, GEOSERVER_USERNAME, GEOSERVER_PASSWORD
+from beachfront.config import GEOSERVER_HOST, GEOSERVER_USERNAME, GEOSERVER_PASSWORD
 
 DETECTIONS_LAYER_ID = 'bfdetections'
 DETECTIONS_STYLE_ID = 'bfdetections'

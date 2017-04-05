@@ -16,7 +16,7 @@ import re
 
 import flask
 
-from bfapi.service import users
+from beachfront.services import users
 
 PATTERNS_AUTHORIZED_ORIGINS = (
     re.compile(r'^https://beachfront(\.[^.]+)*\.geointservices\.io$'),
