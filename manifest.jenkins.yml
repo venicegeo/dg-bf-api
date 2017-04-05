@@ -1,8 +1,8 @@
 ---
 applications:
-- name: bf-api
-  host: bf-api
-  path: bf-api.zip
+- name: beachfront
+  host: beachfront
+  path: beachfront.zip
   memory: 1G
   disk_quota: 1G
   instances: 1
@@ -11,7 +11,15 @@ applications:
     - pz-postgres
     - pz-geoserver-efs
   env:
-    GEOAXIS: __GEOAXIS__
+    CATALOG_HOST: __CATALOG_HOST__
+    CATALOG_SCHEME: __CATALOG_SCHEME__
+
+    GEOAXIS_HOST: __GEOAXIS_HOST__
+    GEOAXIS_SCHEME: __GEOAXIS_SCHEME__
     GEOAXIS_CLIENT_ID: __GEOAXIS_CLIENT_ID__
     GEOAXIS_SECRET: __GEOAXIS_SECRET__
+    GEOAXIS_REDIRECT_URI: __GEOAXIS_REDIRECT_URI__
+
+    PIAZZA_HOST: __PIAZZA_HOST__
+    PIAZZA_SCHEME: __PIAZZA_SCHEME__
     PIAZZA_API_KEY: __PIAZZA_API_KEY__
