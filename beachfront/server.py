@@ -69,6 +69,7 @@ def init(app: flask.Flask):
 
     app.secret_key = config.SECRET_KEY
     app.permanent_session_lifetime = config.SESSION_TTL
+    app.static_url_path = config.STATIC_URL_PATH
     app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     try:

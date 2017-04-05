@@ -20,6 +20,4 @@ fi
 gunicorn beachfront.server:server \
   -b localhost:${PORT} \
   --threads 5 \
-  --keyfile .dev/ssl-certificate.key \
-  --certfile .dev/ssl-certificate.pem \
   --reload

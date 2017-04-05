@@ -38,7 +38,7 @@ PATTERNS_PUBLIC_ENDPOINTS = (
 def apply_default_response_headers(response: flask.Response) -> flask.Response:
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
-    response.headers.setdefault('X-XSS-Protection', '1; mode-block')
+    response.headers.setdefault('X-XSS-Protection', '1; mode=block')
     response.headers.setdefault('Cache-Control', 'no-cache, no-store, must-revalidate, private')
     return response
 
