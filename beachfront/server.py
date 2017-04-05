@@ -11,6 +11,9 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+import os
+import signal
+import sys
 
 import flask
 
@@ -70,12 +73,19 @@ def init(app: flask.Flask):
 
     app.secret_key = config.SECRET_KEY
     app.permanent_session_lifetime = config.SESSION_TTL
-
-    install_service_assets()
-    apply_middlewares(app)
-    attach_routes(app)
-    start_background_tasks()
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+    try:
+        install_service_assets()
+        apply_middlewares(app)
+        attach_routes(app)
+        start_background_tasks()
+    except Exception as err:
+        print(err)
+        print('!' * 80, 'Initialization failed', err, '!' * 80, sep='\n\n', file=sys.stderr, flush=True)
+        os.kill(os.getppid(), signal.SIGQUIT)
+        signal.pause()
+        exit(1)
 
 
 def install_service_assets():
