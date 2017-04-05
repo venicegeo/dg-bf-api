@@ -16,6 +16,8 @@ from .base import *
 
 DOMAIN = 'localdomain'
 
+ENFORCE_HTTPS = False
+
 DATABASE_URI = 'postgres://beachfront:secret@localhost/beachfront'
 
 SECRET_KEY = 'secret'

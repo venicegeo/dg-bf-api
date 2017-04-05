@@ -18,6 +18,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 DOMAIN = os.getenv('DOMAIN')
 
+ENFORCE_HTTPS = True
+
 SESSION_TTL = timedelta(minutes=30)
 
 JOB_WORKER_INTERVAL = timedelta(seconds=60)

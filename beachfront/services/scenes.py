@@ -20,8 +20,8 @@ from typing import Optional
 import dateutil.parser
 import requests
 
-from bfapi.config import CATALOG, DOMAIN
 from beachfront import db
+from beachfront.config import CATALOG_HOST, CATALOG_SCHEME, DOMAIN
 
 
 PATTERN_SCENE_ID = re.compile(r'^(planetscope|rapideye):[\w_-]+$')
@@ -88,7 +88,7 @@ def activate(scene: Scene, planet_api_key: str, user_id: str) -> Optional[str]:
     # Request activation
     platform, external_id = _parse_scene_id(scene.id)
 
-    activation_url = 'https://{}/planet/activate/{}/{}'.format(CATALOG, platform, external_id)
+    activation_url = '{}://{}/planet/activate/{}/{}'.format(CATALOG_SCHEME, CATALOG_HOST, platform, external_id)
     log.info('Activating `%s`', scene.id, actor=user_id, action='activate scene', actee=scene.id)
     try:
         log.debug('Requesting activation; url=`%s`', activation_url)
@@ -111,9 +111,11 @@ def activate(scene: Scene, planet_api_key: str, user_id: str) -> Optional[str]:
         raise CatalogError()
 
 
+def create_catalog_url():
+    return '{}://{}'.format(CATALOG_SCHEME, CATALOG_HOST)
+
+
 def create_download_url(scene_id: str, planet_api_key: str = '') -> str:
-    # HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
-    # FIXME -- hopefully this endpoint can move into the IA Broker eventually
     log = logging.getLogger(__name__)
     log.info('Scenes service create download url', action='service scenes create download url')
     return 'https://bf-api.{}/v0/scene/{}.TIF?planet_api_key={}'.format(
@@ -121,7 +123,6 @@ def create_download_url(scene_id: str, planet_api_key: str = '') -> str:
         scene_id,
         planet_api_key,
     )
-    # HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
 
 
 def get(scene_id: str, planet_api_key: str, *, with_tides: bool = True) -> Scene:
@@ -130,7 +131,7 @@ def get(scene_id: str, planet_api_key: str, *, with_tides: bool = True) -> Scene
 
     platform, external_id = _parse_scene_id(scene_id)
 
-    uri = 'https://{}/planet/{}/{}'.format(CATALOG, platform, external_id)
+    uri = '{}://{}/planet/{}/{}'.format(CATALOG_SCHEME, CATALOG_HOST, platform, external_id)
     log.info('Fetching `%s`', uri, action='fetch scene metadata', actee=scene_id)
     try:
         response = requests.get(

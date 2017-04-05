@@ -16,6 +16,7 @@ import re
 
 import flask
 
+from beachfront.config import ENFORCE_HTTPS
 from beachfront.services import users
 
 PATTERNS_AUTHORIZED_ORIGINS = (
@@ -113,8 +114,13 @@ def csrf_filter():
 
 
 def https_filter():
+
     log = logging.getLogger(__name__)
     request = flask.request
+
+    if not ENFORCE_HTTPS:
+        log.debug('HTTPS is not enforced')
+        return
 
     if request.is_secure:
         log.debug('Allowing HTTPS request: endpoint=`%s` referrer=`%s`', request.path, request.referrer)

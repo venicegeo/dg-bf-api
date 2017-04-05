@@ -16,7 +16,7 @@ import logging
 import requests
 import time
 
-from bfapi.config import PIAZZA, PIAZZA_API_KEY
+from beachfront.config import PIAZZA_HOST, PIAZZA_SCHEME, PIAZZA_API_KEY
 
 STATUS_CANCELLED = 'Cancelled'
 STATUS_CANCELLING = 'Cancelling'
@@ -74,7 +74,7 @@ def create_trigger(*, data_inputs: dict, event_type_id: str, name: str, service_
     log.info('Piazza service create trigger', action='service piazza create trigger')
     try:
         response = requests.post(
-            'https://{}/trigger'.format(PIAZZA),
+            '{}://{}/trigger'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             json={
@@ -125,7 +125,7 @@ def deploy(data_id: str, *, poll_interval: int = 3, max_poll_attempts: int = 10)
     log.info('Piazza service deploy', action='service piazza deploy')
     try:
         response = requests.post(
-            'https://{}/deployment'.format(PIAZZA),
+            '{}://{}/deployment'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             json={
@@ -179,7 +179,7 @@ def execute(service_id: str, data_inputs: dict, data_output: list = None) -> str
     log.info('Piazza service execute', action='service piazza execute')
     try:
         response = requests.post(
-            'https://{}/job'.format(PIAZZA),
+            '{}://{}/job'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             headers={
@@ -223,7 +223,7 @@ def get_file(data_id: str) -> requests.Response:
     log.info('Piazza service get file', action='service piazza get file')
     try:
         response = requests.get(
-            'https://{}/file/{}'.format(PIAZZA, data_id),
+            '{}://{}/file/{}'.format(PIAZZA_SCHEME, PIAZZA_HOST, data_id),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
         )
@@ -244,7 +244,7 @@ def get_service(service_id: str) -> ServiceDescriptor:
     log.info('Piazza service get service', action='service piazza get service')
     try:
         response = requests.get(
-            'https://{}/service/{}'.format(PIAZZA, service_id),
+            '{}://{}/service/{}'.format(PIAZZA_SCHEME, PIAZZA_HOST, service_id),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
         )
@@ -272,7 +272,7 @@ def get_services(pattern: str, count: int = 100) -> List[ServiceDescriptor]:
     log.info('Piazza service get service', action='service piazza get service')
     try:
         response = requests.get(
-            'https://{}/service'.format(PIAZZA),
+            '{}://{}/service'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             params={
@@ -304,7 +304,7 @@ def get_status(job_id: str) -> Status:
     log.info('Piazza service get status', action='service piazza get status')
     try:
         response = requests.get(
-            'https://{}/job/{}'.format(PIAZZA, job_id),
+            '{}://{}/job/{}'.format(PIAZZA_SCHEME, PIAZZA_HOST, job_id),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
         )
@@ -379,7 +379,7 @@ def get_triggers(name: str) -> list:
     log.info('Piazza service get trigger', action='service piazza get trigger')
     try:
         response = requests.post(
-            'https://{}/trigger/query'.format(PIAZZA),
+            '{}://{}/trigger/query'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             json={
@@ -422,7 +422,7 @@ def register_service(
     log.info('Piazza service register service', action='service piazza register service')
     try:
         response = requests.post(
-            'https://{}/service'.format(PIAZZA),
+            '{}://{}/service'.format(PIAZZA_SCHEME, PIAZZA_HOST),
             timeout=TIMEOUT_LONG,
             auth=(PIAZZA_API_KEY, ''),
             json={

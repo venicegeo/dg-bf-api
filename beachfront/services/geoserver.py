@@ -15,17 +15,19 @@ import logging
 
 import requests
 
-from beachfront.config import GEOSERVER_HOST, GEOSERVER_USERNAME, GEOSERVER_PASSWORD
+from beachfront.config import GEOSERVER_HOST, GEOSERVER_SCHEME, GEOSERVER_USERNAME, GEOSERVER_PASSWORD
 
 DETECTIONS_LAYER_ID = 'bfdetections'
 DETECTIONS_STYLE_ID = 'bfdetections'
 TIMEOUT = 24
 
 
+def create_wms_url():
+    return '{}://{}/geoserver/wms'.format(GEOSERVER_SCHEME, GEOSERVER_HOST)
+
+
 def install_if_needed():
     log = logging.getLogger(__name__)
-    log.info('Geoserver service install if needed', action='service geoserver install')
-    log.info('Checking to see if installation is required',action='Check for required installation')
 
     is_installed = True
 
@@ -38,21 +40,19 @@ def install_if_needed():
         install_style(DETECTIONS_STYLE_ID)
 
     if is_installed:
-        log.info('GeoServer components exist and will not be reinstalled',action='GeoServer exists')
+        log.info('GeoServer components exist and will not be reinstalled')
     else:
-        log.info('Installation complete!',action='GeoServer installed')
+        log.info('Installation complete!')
 
 
 def install_layer(layer_id: str):
     log = logging.getLogger(__name__)
-    log.info('Geoserver  service install layer', action=' service geoserver install')
-    log.info('Installing `%s`', layer_id)
+    log.info('Installing `%s`', layer_id, action='install layer', actee='geoserver')
     try:
         response = requests.post(
-            'http://{host}/geoserver/rest/workspaces/{ws}/datastores/{ds}/featuretypes'.format(  # FIXME -- https please?
-                host=GEOSERVER_HOST,
-                ws='piazza',  # FIXME -- autodetect?
-                ds='piazza',  # FIXME -- autodetect?
+            '{}://{}/geoserver/rest/workspaces/piazza/datastores/piazza/featuretypes'.format(
+                GEOSERVER_SCHEME,
+                GEOSERVER_HOST,
             ),
             auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
             timeout=TIMEOUT,
@@ -133,11 +133,11 @@ def install_layer(layer_id: str):
 
 def install_style(style_id: str):
     log = logging.getLogger(__name__)
-    log.info('Geoserver  service install style', action=' service geoserver install')
-    log.info('Installing `%s`', style_id)
+    log.info('Installing `%s`', style_id, action='install SLD', actee='geoserver')
     try:
         response = requests.post(
-            'http://{}/geoserver/rest/styles'.format(  # FIXME -- https please?
+            '{}://{}/geoserver/rest/styles'.format(
+                GEOSERVER_SCHEME,
                 GEOSERVER_HOST,
             ),
             data="""
@@ -168,7 +168,8 @@ def install_style(style_id: str):
         )
         response.raise_for_status()
         response = requests.put(
-            'http://{}/geoserver/rest/layers/{}'.format(  # FIXME -- https please?
+            '{}://{}/geoserver/rest/layers/{}'.format(
+                GEOSERVER_SCHEME,
                 GEOSERVER_HOST,
                 DETECTIONS_LAYER_ID,
             ),
@@ -200,10 +201,11 @@ def install_style(style_id: str):
 
 def layer_exists(layer_id: str) -> bool:
     log = logging.getLogger(__name__)
-    log.info('Geoserver  service layer exists', action=' service geoserver check')
+    log.info('Checking for existence of layer `%s`', layer_id, action='check for layer', actee='geoserver')
     try:
         response = requests.get(
-            'http://{}/geoserver/rest/layers/{}'.format(  # FIXME -- https please
+            '{}://{}/geoserver/rest/layers/{}'.format(
+                GEOSERVER_SCHEME,
                 GEOSERVER_HOST,
                 layer_id,
             ),
@@ -218,10 +220,11 @@ def layer_exists(layer_id: str) -> bool:
 
 def style_exists(style_id: str) -> bool:
     log = logging.getLogger(__name__)
-    log.info('Geoserver  service style exists', action=' service geoserver check')
+    log.info('Checking for existence of style `%s`', style_id, action='check for style', actee='geoserver')
     try:
         response = requests.get(
-            'http://{}/geoserver/rest/styles/{}'.format(  # FIXME -- https please
+            '{}://{}/geoserver/rest/styles/{}'.format(
+                GEOSERVER_SCHEME,
                 GEOSERVER_HOST,
                 style_id,
             ),

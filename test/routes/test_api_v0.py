@@ -13,7 +13,7 @@
 
 import unittest
 
-from beachfront.routes import v0 as routes
+from beachfront.routes import api_v0 as routes
 
 
 class GetAlgorithmTest(unittest.TestCase):

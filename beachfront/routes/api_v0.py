@@ -18,9 +18,12 @@ import dateutil.parser
 import dateutil.tz
 import flask
 
-from bfapi.config import CATALOG, GEOSERVER_HOST
 from beachfront.db import DatabaseError
-from beachfront.services import algorithms as _algorithms, jobs as _jobs, productlines as _productlines, scenes as _scenes
+from beachfront.services import (algorithms as _algorithms,
+                                 geoserver as _geoserver,
+                                 jobs as _jobs,
+                                 productlines as _productlines,
+                                 scenes as _scenes)
 
 
 #
@@ -227,8 +230,8 @@ def get_user_data():
             'joined_on': flask.request.user.created_on,
         },
         'services': {
-            'catalog': 'https://{}'.format(CATALOG),
-            'wms_server': 'https://{}/geoserver/wms'.format(GEOSERVER_HOST),
+            'catalog': _scenes.create_catalog_url(),
+            'wms_server': _geoserver.create_wms_url(),
         },
     })
 
