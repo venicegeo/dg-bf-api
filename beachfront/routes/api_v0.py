@@ -26,10 +26,14 @@ from beachfront.services import (algorithms as _algorithms,
                                  scenes as _scenes)
 
 
+blueprint = flask.Blueprint('v0', __name__)
+
+
 #
 # Algorithms
 #
 
+@blueprint.route('/algorithms/<service_id>', methods=['GET'])
 def get_algorithm(service_id: str):
     try:
         algorithm = _algorithms.get(service_id)
@@ -40,6 +44,7 @@ def get_algorithm(service_id: str):
     })
 
 
+@blueprint.route('/algorithms', methods=['GET'])
 def list_algorithms():
     algorithms = _algorithms.list_all()
     return flask.jsonify({
@@ -51,6 +56,7 @@ def list_algorithms():
 # Jobs
 #
 
+@blueprint.route('/jobs', methods=['POST'])
 def create_job():
     try:
         payload = flask.request.get_json()
@@ -80,6 +86,7 @@ def create_job():
     }), 201
 
 
+@blueprint.route('/jobs/<job_id>', methods=['GET'])
 def download_geojson(job_id: str):
     try:
         detections = _jobs.get_detections(job_id)
@@ -94,6 +101,7 @@ def download_geojson(job_id: str):
     }
 
 
+@blueprint.route('/jobs/<job_id>', methods=['DELETE'])
 def forget_job(job_id: str):
     try:
         _jobs.forget(flask.request.user.user_id, job_id)
@@ -102,6 +110,7 @@ def forget_job(job_id: str):
     return 'Forgot {}'.format(job_id), 200
 
 
+@blueprint.route('/jobs', methods=['GET'])
 def list_jobs():
     jobs = _jobs.get_all(flask.request.user.user_id)
     return flask.jsonify({
@@ -112,6 +121,7 @@ def list_jobs():
     })
 
 
+@blueprint.route('/jobs/by_productline/<productline_id>', methods=['GET'])
 def list_jobs_for_productline(productline_id: str):
     try:
         since = dateutil.parser.parse(
@@ -130,6 +140,7 @@ def list_jobs_for_productline(productline_id: str):
     })
 
 
+@blueprint.route('/jobs/by_scene/<scene_id>', methods=['GET'])
 def list_jobs_for_scene(scene_id: str):
     jobs = _jobs.get_by_scene(scene_id)
     return flask.jsonify({
@@ -141,6 +152,7 @@ def list_jobs_for_scene(scene_id: str):
     })
 
 
+@blueprint.route('/jobs/<job_id>', methods=['GET'])
 def get_job(job_id: str):
     try:
         record = _jobs.get(flask.request.user.user_id, job_id)
@@ -155,6 +167,7 @@ def get_job(job_id: str):
 # Product Lines
 #
 
+@blueprint.route('/productlines', methods=['POST'])
 def create_productline():
     try:
         payload = flask.request.get_json()
@@ -195,6 +208,7 @@ def create_productline():
     }), 201
 
 
+@blueprint.route('/productlines', methods=['DELETE'])
 def delete_productline(productline_id: str):
     user_id = flask.request.user.user_id
     try:
@@ -208,6 +222,7 @@ def delete_productline(productline_id: str):
     return 'Deleted product line {}'.format(productline_id), 200
 
 
+@blueprint.route('/productlines', methods=['GET'])
 def list_productlines():
     productlines = _productlines.get_all()
     return flask.jsonify({
@@ -222,6 +237,7 @@ def list_productlines():
 # Profile
 #
 
+@blueprint.route('/user', methods=['GET'])
 def get_user_data():
     return flask.jsonify({
         'profile': {
@@ -239,8 +255,7 @@ def get_user_data():
 # Scenes
 #
 
-# HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
-# FIXME -- hopefully this can move into the IA Broker eventually
+@blueprint.route('/scenes/<scene_id>.TIF', methods=['GET'])
 def forward_to_geotiff(scene_id: str):
     planet_api_key = flask.request.args.get('planet_api_key')
     if not planet_api_key:

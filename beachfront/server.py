@@ -33,27 +33,13 @@ def apply_middlewares(app: flask.Flask):
 
 
 def attach_routes(app: flask.Flask):
-    # Public Endpoints
     app.add_url_rule(methods=['GET'], rule='/', view_func=routes.health_check)
     app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.login)
-    app.add_url_rule(methods=['GET'], rule='/login/geoaxis', view_func=routes.login_start)
-    app.add_url_rule(methods=['GET'], rule='/v0/scene/<scene_id>.TIF', view_func=routes.v0.forward_to_geotiff)
-
-    # Protected endpoints
+    app.add_url_rule(methods=['GET'], rule='/login/callback', view_func=routes.login_callback)
+    app.add_url_rule(methods=['GET'], rule='/ui', view_func=routes.ui)
     app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.logout)
-    app.add_url_rule(methods=['GET'], rule='/v0/user', view_func=routes.v0.get_user_data)
-    app.add_url_rule(methods=['GET'], rule='/v0/algorithm', view_func=routes.v0.list_algorithms)
-    app.add_url_rule(methods=['GET'], rule='/v0/algorithm/<service_id>', view_func=routes.v0.get_algorithm)
-    app.add_url_rule(methods=['POST'], rule='/v0/job', view_func=routes.v0.create_job)
-    app.add_url_rule(methods=['GET'], rule='/v0/job', view_func=routes.v0.list_jobs)
-    app.add_url_rule(methods=['GET'], rule='/v0/job/<job_id>', view_func=routes.v0.get_job)
-    app.add_url_rule(methods=['DELETE'], rule='/v0/job/<job_id>', view_func=routes.v0.forget_job)
-    app.add_url_rule(methods=['GET'], rule='/v0/job/<job_id>.geojson', view_func=routes.v0.download_geojson)
-    app.add_url_rule(methods=['GET'], rule='/v0/job/by_scene/<scene_id>', view_func=routes.v0.list_jobs_for_scene)
-    app.add_url_rule(methods=['GET'], rule='/v0/job/by_productline/<productline_id>', view_func=routes.v0.list_jobs_for_productline)
-    app.add_url_rule(methods=['GET'], rule='/v0/productline', view_func=routes.v0.list_productlines)
-    app.add_url_rule(methods=['POST'], rule='/v0/productline', view_func=routes.v0.create_productline)
-    app.add_url_rule(methods=['DELETE'], rule='/v0/productline/<productline_id>', view_func=routes.v0.delete_productline)
+
+    app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
 
 
 def banner():
