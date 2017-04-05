@@ -45,10 +45,8 @@ if [ ! -d "$VIRTUALENV_ROOT" -o ! -f "$ENVIRONMENT_FILE" -o ! -d "$UI_ROOT/node_
 
     rm -rf $ENVIRONMENT_FILE
 
-    echo "
-    export PIAZZA_API_KEY=
-    export PORT=5000
-    " > $ENVIRONMENT_FILE
+    echo 'CONFIG=development' >> $ENVIRONMENT_FILE
+    echo 'PIAZZA_API_KEY=' >> $ENVIRONMENT_FILE
 
 
     ############################################################################

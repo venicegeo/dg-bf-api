@@ -9,7 +9,7 @@ echo "Cleaning up"
 rm -rfv \
     beachfront.zip \
     beachfront/static/ui \
-    beachfront/ui/npm-debug.log \
+    ui/npm-debug.log \
     vendor \
     report \
     .coverage \

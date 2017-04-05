@@ -7,6 +7,7 @@ cd $(dirname $(dirname $0))  # Return to root
 
 . venv/bin/activate
 
+set -a
 . _environment-vars.sh
 
 coverage run --source=beachfront -m unittest

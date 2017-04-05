@@ -7,7 +7,7 @@
 
 # Development artifacts
 ui/node_modules
-_environment-vars.sh
+_environment-vars*.sh
 npm-debug.log
 venv
 __pycache__

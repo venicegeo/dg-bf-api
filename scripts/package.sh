@@ -24,8 +24,6 @@ FILE_LIST="
 echo -e "\nCollecting Python dependencies\n"
 
 (
-    . venv/bin/activate
-
     mkdir -p vendor
     pip install -d vendor -r requirements.txt
 )

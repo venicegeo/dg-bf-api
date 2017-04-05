@@ -5,16 +5,18 @@ cd $(dirname $(dirname $0))  # Return to root
 ################################################################################
 
 
-SERVER_PORT=$PORT
-UI_PORT=$(($PORT - 1))
+SERVER_PORT=5000
+UI_PORT=$(($SERVER_PORT - 1))
 
 
 ################################################################################
 
 (
     . venv/bin/activate
+
+    set -a
     . _environment-vars.sh
-    CONFIG=development \
+
     STATIC_BASEURL=http://localhost:$UI_PORT/ \
     gunicorn beachfront.server:server -b localhost:$SERVER_PORT --threads 5 --reload
 ) &
