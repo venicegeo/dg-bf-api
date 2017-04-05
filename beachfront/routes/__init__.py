@@ -11,15 +11,14 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+import os
 import time
-import urllib.parse
 
 import flask
 import logging
 
-from bfapi.config import DOMAIN, UI, GEOAXIS, GEOAXIS_CLIENT_ID
-from bfapi.service import users
-from bfapi.routes import v0
+from beachfront.services import users
+from beachfront.routes import api_v0
 
 _time_started = time.time()
 
@@ -31,7 +30,7 @@ def health_check():
     })
 
 
-def login():
+def login_callback():
     query_params = flask.request.args
 
     auth_code = query_params.get('code', '').strip()
@@ -40,36 +39,35 @@ def login():
 
     try:
         user = users.authenticate_via_geoaxis(auth_code)
-    except users.Unauthorized as err:
-        return str(err), 401
-    except users.GeoaxisUnreachable as err:
+    except users.GeoAxisError as err:
         return str(err), 503
     except users.Error:
         return 'Cannot log in: an internal error prevents authentication', 500
 
     flask.session.permanent = True
     flask.session['api_key'] = user.api_key
+    response = flask.redirect(flask.url_for('ui'))
 
-    # Send user back to the UI
-    return flask.redirect('https://{}?logged_in=true'.format(UI))
+    return response
 
 
-def login_start():
-    """
-    Avoid having to drop GeoAxis configuration into bf-ui
-    """
-    params = urllib.parse.urlencode((
-        ('client_id', GEOAXIS_CLIENT_ID),
-        ('redirect_uri', 'https://bf-api.{}/login'.format(DOMAIN)),
-        ('response_type', 'code'),
-        ('scope', 'UserProfile.me'),
-    ))
-    return flask.redirect('https://{}/ms_oauth/oauth2/endpoints/oauthservice/authorize?{}'.format(GEOAXIS, params))
+def login():
+    return flask.render_template('login.jinja2',
+                                 oauth_url=users.create_oauth_url())
 
+
+def ui():
+    return flask.render_template('ui.jinja2',
+                                 user=flask.request.user)
 
 def logout():
     log = logging.getLogger(__name__)
 
+    if getattr(flask.request, 'user', None):
+        log.info('Logged out', actor=flask.request.user.user_id, action='log out')
+
     flask.session.clear()
-    log.info('Logged out', actor=flask.request.user.user_id, action='log out')
-    return 'You have been logged out'
+
+    response = flask.redirect(flask.url_for('login'))
+
+    return response

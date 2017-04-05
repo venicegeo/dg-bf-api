@@ -1,0 +1,15 @@
+{% extends '_layout.jinja2' %}
+
+{% block viewport %}
+    <main>
+        <h1>Welcome to Beachfront!</h1>
+
+        <div class="consentMessage">
+            {% include '_consent_message.html' %}
+        </div>
+
+        <a class="loginButton" href="{{ oauth_url }}">
+            <i class="fa fa-lock"></i> Accept Terms and Login with GeoAxis
+        </a>
+    </main>
+{% endblock %}

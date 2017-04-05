@@ -29,7 +29,8 @@ PATTERNS_PUBLIC_ENDPOINTS = (
     re.compile(r'^/$'),
     re.compile(r'^/favicon.ico$'),
     re.compile(r'^/login$'),
-    re.compile(r'^/login/geoaxis$'),
+    re.compile(r'^/login/callback'),
+    re.compile(r'^/logout$'),
     re.compile(r'^/v0/scene/[^/]+.TIF$'),
 )
 
@@ -114,7 +115,6 @@ def csrf_filter():
 
 
 def https_filter():
-
     log = logging.getLogger(__name__)
     request = flask.request
 

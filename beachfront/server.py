@@ -15,7 +15,6 @@ import flask
 from flask_cors import CORS
 
 
-FALLBACK_MIMETYPE = 'text/plain'
 from beachfront import config, db, middleware, routes, services
 from beachfront import DEBUG_MODE, MUTE_LOGS
 
@@ -73,17 +72,16 @@ def banner():
 
 def init(app: flask.Flask):
     banner()
-    config.validate()
     db.init()
 
     app.secret_key = config.SECRET_KEY
-    app.response_class.default_mimetype = FALLBACK_MIMETYPE
     app.permanent_session_lifetime = config.SESSION_TTL
 
     install_service_assets()
     apply_middlewares(app)
     attach_routes(app)
     start_background_tasks()
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 
 def install_service_assets():
