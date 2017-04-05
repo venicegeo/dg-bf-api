@@ -5,6 +5,8 @@ bf-api.zip
 .idea
 .env
 .dev
+ui/node_modules
+beachfront/static/ui/
 .coverage
 report
 manifest.int.yml

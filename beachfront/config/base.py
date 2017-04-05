@@ -29,4 +29,4 @@ PIAZZA_SCHEME  = os.getenv('PIAZZA_SCHEME')
 PIAZZA_HOST    = os.getenv('PIAZZA_HOST')
 PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 
-STATIC_URL_PATH = os.getenv('STATIC_URL', '/static/')
+STATIC_BASEURL = os.getenv('STATIC_BASEURL', '/static/')

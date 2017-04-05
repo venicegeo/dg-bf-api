@@ -69,8 +69,13 @@ def init(app: flask.Flask):
 
     app.secret_key = config.SECRET_KEY
     app.permanent_session_lifetime = config.SESSION_TTL
-    app.static_url_path = config.STATIC_URL_PATH
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+    def static_url_for(path: str) -> str:
+        return config.STATIC_BASEURL + path
+
+    app.add_template_global(static_url_for)
+
 
     try:
         install_service_assets()

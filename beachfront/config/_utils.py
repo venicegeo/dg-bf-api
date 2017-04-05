@@ -89,7 +89,7 @@ def validate(fatal: bool = True):
                          'PIAZZA_SCHEME',
                          'PIAZZA_API_KEY',
                          'SECRET_KEY',
-                         'STATIC_URL_PATH'):
+                         'STATIC_BASEURL'):
         if not getattr(config, required_key, None):
             errors.append('{} cannot be blank'.format(required_key))
 
