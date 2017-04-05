@@ -20,8 +20,8 @@ import sqlalchemy as sa
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.engine import Engine, Connection, ResultProxy
 
-from bfapi.config import POSTGRES_DATABASE, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USERNAME
-from bfapi.db import jobs, productlines, scenes, users
+from beachfront.config import DATABASE_URI
+from beachfront.db import jobs, productlines, scenes, users
 
 _engine = None  # type: Engine
 
@@ -29,7 +29,7 @@ _engine = None  # type: Engine
 def get_connection() -> Connection:
     log = logging.getLogger(__name__)
     try:
-        log.debug('Connecting to database', action='connect', actee=POSTGRES_HOST + '/' + POSTGRES_DATABASE)
+        log.debug('Connecting to database', action='connect', actee='database')
         return _engine.connect()
     except DatabaseError as err:
         log.critical('Database connection failed: %s', err)
@@ -40,17 +40,10 @@ def init():
     log = logging.getLogger(__name__)
     global _engine
     try:
-        _engine = sa.create_engine(
-            'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
-                host=POSTGRES_HOST,
-                port=POSTGRES_PORT,
-                user=POSTGRES_USERNAME,
-                database=POSTGRES_DATABASE,
-                password=POSTGRES_PASSWORD,
-            ))
+        _engine = sa.create_engine(DATABASE_URI)
         _install_if_needed()
     except:
-        log.exception('Initialization failed', action='initialize', actee=POSTGRES_HOST + '/' + POSTGRES_DATABASE)
+        log.exception('Initialization failed', action='initialize', actee='database')
         # Fail fast
         print(
             '-' * 80,
@@ -87,7 +80,7 @@ def print_diagnostics(err: DatabaseError):
 
 def _install():
     log = logging.getLogger(__name__)
-    audit = dict(action='install schema', actee=POSTGRES_HOST + '/' + POSTGRES_DATABASE)
+    audit = dict(action='install schema', actee='database')
 
     log.info('Installing schema', **audit)
 
@@ -113,7 +106,7 @@ def _install():
 def _install_if_needed():
     log = logging.getLogger(__name__)
 
-    log.info('Checking to see if installation is required',action='Checking for instalation')
+    log.info('Checking to see if installation is required')
 
     # Load SQL script
     try:
@@ -132,7 +125,7 @@ def _install_if_needed():
         raise InstallationError('schema execution failed', err)
 
     if is_installed:
-        log.info('Schema exists and will not be reinstalled',action='Schema exists and will not be reinstalled')
+        log.info('Schema exists and will not be reinstalled')
         return
 
     _install()

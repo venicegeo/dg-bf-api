@@ -88,29 +88,46 @@ def csrf_filter():
 
     log = logging.getLogger(__name__)
     request = flask.request
-
-    if _is_public_endpoint(request.path):
-        log.debug('Allowing access to public endpoint `%s`', request.path)
-        return
+    session = flask.session
 
     # Explicitly allow...
 
-    is_xhr = request.is_xhr or 'x-requested-with' in request.headers.get('Access-Control-Request-Headers', '').lower()
-    origin = request.headers.get('Origin')
-    if _is_authorized_origin(origin) and is_xhr:
-        log.debug('Allowing CORS access to protected endpoint `%s` from authorized origin `%s`', request.path, origin)
+    if request.method in ('GET', 'HEAD', 'OPTIONS'):
+        log.debug('Allow: method is defined as "SAFE" by RFC2616')
         return
-    elif not origin and not request.referrer:
-        log.debug('Allowing non-CORS access to protected endpoint `%s`', request.path)
+
+    if not session.get('api_key'):
+        log.debug('Allow: no session exists')
+        return
+
+    csrf_token = session.get('csrf_token')
+    if csrf_token and csrf_token == request.headers.get('X-XSRF-Token'):
+        log.debug('Allow: CSRF token matches')
+        return
+
+    if request.authorization and users.is_api_key(request.authorization.username):
+        log.debug('Allow: API-key-based access')
         return
 
     # ...and reject everything else
-    log.warning('Possible CSRF attempt: endpoint=`%s` origin=`%s` referrer=`%s` ip=`%s` is_xhr=`%s`',
+    log.warning('Possible CSRF attempt:\n'
+                '---\n\n'
+                'Endpoint: %s\n'
+                'Origin: %s\n'
+                'Referrer: %s\n'
+                'IP: %s\n'
+                'X-Requested-With: %s\n'
+                'X-CSRF-Token: %s\n'
+                '              %s (expected value)\n\n'
+                '---',
                 request.path,
-                origin,
+                request.headers.get('Origin'),
                 request.referrer,
                 request.remote_addr,
-                is_xhr)
+                request.headers.get('X-Requested-With'),
+                request.headers.get('X-XSRF-Token'),
+                session.get('csrf_token'),
+                )
     return 'Access Denied: CORS request validation failed', 403
 
 
@@ -135,15 +152,6 @@ def https_filter():
 #
 # Helpers
 #
-
-def _is_authorized_origin(origin: str) -> bool:
-    if not origin:
-        return False
-    for pattern in PATTERNS_AUTHORIZED_ORIGINS:
-        if pattern.match(origin):
-            return True
-    return False
-
 
 def _is_public_endpoint(path: str) -> bool:
     for pattern in PATTERNS_PUBLIC_ENDPOINTS:

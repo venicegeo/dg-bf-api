@@ -46,7 +46,10 @@ def login_callback():
 
     flask.session.permanent = True
     flask.session['api_key'] = user.api_key
+    flask.session['csrf_token'] = os.urandom(32).hex()
+
     response = flask.redirect(flask.url_for('ui'))
+    response.set_cookie('csrf_token', flask.session['csrf_token'])
 
     return response
 
@@ -69,5 +72,6 @@ def logout():
     flask.session.clear()
 
     response = flask.redirect(flask.url_for('login'))
+    response.delete_cookie('csrf_token')
 
     return response

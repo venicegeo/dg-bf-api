@@ -11,9 +11,8 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import flask
-from flask_cors import CORS
 
+import flask
 
 from beachfront import config, db, middleware, routes, services
 from beachfront import DEBUG_MODE, MUTE_LOGS
@@ -24,11 +23,6 @@ def apply_middlewares(app: flask.Flask):
     app.before_request(middleware.csrf_filter)
     app.before_request(middleware.auth_filter)
     app.after_request(middleware.apply_default_response_headers)
-
-    CORS(app,
-         origins=middleware.PATTERNS_AUTHORIZED_ORIGINS,
-         max_age=1200,
-         supports_credentials=True)
 
 
 def attach_routes(app: flask.Flask):
