@@ -29,10 +29,9 @@ def apply_middlewares(app: flask.Flask):
 
 
 def attach_routes(app: flask.Flask):
-    app.add_url_rule(methods=['GET'], rule='/', view_func=routes.health_check)
+    app.add_url_rule(methods=['GET'], rule='/', view_func=routes.ui)
     app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.login)
     app.add_url_rule(methods=['GET'], rule='/login/callback', view_func=routes.login_callback)
-    app.add_url_rule(methods=['GET'], rule='/ui', view_func=routes.ui)
     app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.logout)
 
     app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
@@ -41,9 +40,9 @@ def attach_routes(app: flask.Flask):
 def banner():
     configurations = []
     for key, value in sorted(config.__dict__.items()):
-        if not key.isupper() or 'PASSWORD' in key:
+        if not key.isupper():
             continue
-        configurations.append('{key:>38} : {value}'.format(key=key, value=value))
+        configurations.append('{key:<20} : {value}'.format(key=key, value=value))
 
     warnings = []
     if DEBUG_MODE:
@@ -54,9 +53,6 @@ def banner():
 
     print(
         '-' * 120,
-        '',
-        'bf-api'.center(120),
-        '~~~~~~'.center(120),
         '',
         *configurations,
         '',
@@ -89,11 +85,11 @@ def init(app: flask.Flask):
 
 
 def install_service_assets():
-    service.geoserver.install_if_needed()
+    services.geoserver.install_if_needed()
 
 
 def start_background_tasks():
-    service.jobs.start_worker()
+    services.jobs.start_worker()
 
 
 ################################################################################

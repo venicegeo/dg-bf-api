@@ -47,10 +47,6 @@ def auth_filter():
     log = logging.getLogger(__name__)
     request = flask.request
 
-    if _is_public_endpoint(request.path):
-        log.debug('Allowing access to public endpoint `%s`', request.path)
-        return
-
     if request.method == 'OPTIONS':
         log.debug('Allowing preflight request to endpoint `%s`', request.path)
         return
@@ -63,6 +59,9 @@ def auth_filter():
         api_key = request.authorization['username'].strip()
 
     if not api_key:
+        if _is_public_endpoint(request.path):
+            log.debug('Allowing access to public endpoint `%s`', request.path)
+            return
         return 'Cannot authenticate request: API key is missing', 401
 
     try:

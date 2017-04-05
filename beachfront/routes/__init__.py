@@ -12,22 +12,12 @@
 # specific language governing permissions and limitations under the License.
 
 import os
-import time
 
 import flask
 import logging
 
 from beachfront.services import users
 from beachfront.routes import api_v0
-
-_time_started = time.time()
-
-
-def health_check():
-    uptime = round(time.time() - _time_started, 3)
-    return flask.jsonify({
-        'uptime': uptime,
-    })
 
 
 def login_callback():
@@ -60,13 +50,16 @@ def login():
 
 
 def ui():
+    if not _is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+
     return flask.render_template('ui.jinja2',
                                  user=flask.request.user)
 
 def logout():
     log = logging.getLogger(__name__)
 
-    if getattr(flask.request, 'user', None):
+    if _is_logged_in():
         log.info('Logged out', actor=flask.request.user.user_id, action='log out')
 
     flask.session.clear()
@@ -75,3 +68,7 @@ def logout():
     response.delete_cookie('csrf_token')
 
     return response
+
+
+def _is_logged_in():
+    return hasattr(flask.request, 'user')

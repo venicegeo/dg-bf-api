@@ -14,7 +14,7 @@
 from .base import *
 
 
-DOMAIN = 'localdomain'
+DOMAIN = 'int.geointservices.io'
 
 ENFORCE_HTTPS = False
 
