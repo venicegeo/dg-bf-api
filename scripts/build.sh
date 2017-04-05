@@ -5,9 +5,8 @@ cd $(dirname $(dirname $0))  # Return to root
 ################################################################################
 
 
-. venv/bin/activate
+echo -e "\nBuilding UI\n"
 
-. _environment-vars.sh
-
-coverage run --source=beachfront -m unittest
-coverage report
+cd ui
+NODE_ENV=production \
+./node_modules/.bin/webpack --hide-modules

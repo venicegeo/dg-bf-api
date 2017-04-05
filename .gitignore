@@ -1,18 +1,25 @@
+# IDE Stuff
+.vscode
+.idea
+.project
+.pydevproject
+
+
+# Development artifacts
+ui/node_modules
+_environment-vars.sh
+npm-debug.log
+venv
 __pycache__
 *.pyc
-.vscode
-bf-api.zip
-.idea
-.env
-.dev
-ui/node_modules
+
+
+# Build artifacts
 beachfront/static/ui/
+beachfront.zip
+vendor
 .coverage
 report
 manifest.int.yml
 manifest.stage.yml
 manifest.prod.yml
-
-.project
-
-.pydevproject

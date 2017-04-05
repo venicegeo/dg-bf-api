@@ -18,20 +18,11 @@ from beachfront import routes
 from beachfront.services import users
 
 
-@patch('flask.jsonify', side_effect=dict)
-@patch('flask.request', path='/')
-class HealthCheckTest(unittest.TestCase):
-    def test_returns_server_uptime(self, *_):
-        response = routes.health_check()
-        self.assertIn('uptime', response)
-        self.assertIsInstance(response['uptime'], float)
-
-
 class LoginStartCheckTest(unittest.TestCase):
     maxDiff = 4096
 
     def test_redirects_to_geoaxis_oauth_authorization(self):
-        response = routes.login_start()
+        response = routes.login()
         self.assertEqual(
             'https://test-geoaxis.test.localdomain/ms_oauth/oauth2/endpoints/oauthservice/authorize' +
             '?client_id=test-geoaxis-client-id' +

@@ -1,6 +1,20 @@
-#!/bin/bash
+#!/bin/bash -e
 
 cd $(dirname $(dirname $0))  # Return to root
+################################################################################
 
+
+echo
 echo "Cleaning up"
-rm -rfv bf-api.zip vendor report .coverage manifest.{dev,int,stage,prod}.yml
+rm -rfv \
+    beachfront.zip \
+    beachfront/static/ui \
+    beachfront/ui/npm-debug.log \
+    vendor \
+    report \
+    .coverage \
+    manifest.dev.yml \
+    manifest.int.yml \
+    manifest.stage.yml \
+    manifest.prod.yml \
+    | sed 's/^/    - /'
