@@ -16,11 +16,11 @@ from .base import *
 
 
 DATABASE_URI = 'postgres://{username}:{password}@{host}:{port}/{database}'.format(
-    host=_utils.vcap_services['pz-postgres.credentials.hostname'],
-    port=_utils.vcap_services['pz-postgres.credentials.port'],
-    database=_utils.vcap_services['pz-postgres.credentials.database'],
-    username=_utils.vcap_services['pz-postgres.credentials.username'],
-    password=_utils.vcap_services['pz-postgres.credentials.password'],
+    host=_utils.VCAP.SERVICES['pz-postgres.credentials.hostname'],
+    port=_utils.VCAP.SERVICES['pz-postgres.credentials.port'],
+    database=_utils.VCAP.SERVICES['pz-postgres.credentials.database'],
+    username=_utils.VCAP.SERVICES['pz-postgres.credentials.username'],
+    password=_utils.VCAP.SERVICES['pz-postgres.credentials.password'],
 )
 
 SECRET_KEY  = os.urandom(32).hex()
@@ -39,6 +39,6 @@ PIAZZA_HOST    = os.getenv('PIAZZA_HOST')
 PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 
 GEOSERVER_SCHEME   = 'https'
-GEOSERVER_HOST     = _utils.vcap_services['pz-geoserver-efs.credentials.host']
-GEOSERVER_USERNAME = _utils.vcap_services['pz-geoserver-efs.credentials.username']
-GEOSERVER_PASSWORD = _utils.vcap_services['pz-geoserver-efs.credentials.password']
+GEOSERVER_HOST     = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.host']
+GEOSERVER_USERNAME = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.username']
+GEOSERVER_PASSWORD = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.password']

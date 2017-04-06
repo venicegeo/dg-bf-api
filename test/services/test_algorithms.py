@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 from beachfront.services import algorithms, piazza
 
 
-@patch('bfapi.service.piazza.get_services')
+@patch('beachfront.services.piazza.get_services')
 class ListAllTest(unittest.TestCase):
     def test_requests_algorithms_from_piazza(self, mock: MagicMock):
         algorithms.list_all()
@@ -108,7 +108,7 @@ class ListAllTest(unittest.TestCase):
             algorithms.list_all()
 
 
-@patch('bfapi.service.piazza.get_service')
+@patch('beachfront.services.piazza.get_service')
 class GetTest(unittest.TestCase):
     def test_requests_algorithms_from_piazza(self, mock: MagicMock):
         mock.return_value = create_service()

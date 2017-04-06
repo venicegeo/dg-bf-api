@@ -12,7 +12,6 @@
 # specific language governing permissions and limitations under the License.
 
 import unittest
-from unittest.mock import call, patch
 
 import flask
 
@@ -20,20 +19,6 @@ from test import helpers
 
 from beachfront.services import users
 from beachfront import middleware
-
-AUTHORIZED_ORIGINS = (
-    'https://beachfront.geointservices.io',
-    'https://beachfront.dev.geointservices.io',
-    'https://beachfront.int.geointservices.io',
-    'https://beachfront.stage.geointservices.io',
-    'https://beachfront.arbitrary.subdomain.geointservices.io',
-    'https://bf-swagger.geointservices.io',
-    'https://bf-swagger.dev.geointservices.io',
-    'https://bf-swagger.int.geointservices.io',
-    'https://bf-swagger.stage.geointservices.io',
-    'https://bf-swagger.arbitrary.subdomain.geointservices.io',
-    'https://localhost:8080',
-)
 
 
 class ApplyDefaultResponseHeadersTest(unittest.TestCase):
@@ -50,7 +35,7 @@ class ApplyDefaultResponseHeadersTest(unittest.TestCase):
     def test_adds_correct_x_xss_protection(self):
         response = flask.Response()
         middleware.apply_default_response_headers(response)
-        self.assertEqual('1; mode-block', response.headers['X-XSS-Protection'])
+        self.assertEqual('1; mode=block', response.headers['X-XSS-Protection'])
 
     def test_adds_correct_cache_control(self):
         response = flask.Response()
@@ -58,16 +43,11 @@ class ApplyDefaultResponseHeadersTest(unittest.TestCase):
         self.assertEqual('no-cache, no-store, must-revalidate, private', response.headers['Cache-Control'])
 
 
-class AuthFilterTest(unittest.TestCase):
+class AuthFilterTest(helpers.MockableTestCase):
     def setUp(self):
-        self.mock_authenticate = self.create_mock('bfapi.service.users.authenticate_via_api_key', side_effect=create_user)
-        self.request = self.create_mock('flask.request', spec=flask.Request)
+        self.mock_authenticate = self.create_mock('beachfront.services.users.authenticate_via_api_key', side_effect=create_user)
+        self.request = self.create_mock('flask.request', spec=flask.Request, authorization=None)
         self.session = self.create_mock('flask.session', new={})
-
-    def create_mock(self, target_name, **kwargs):
-        patcher = patch(target_name, **kwargs)
-        self.addCleanup(patcher.stop)
-        return patcher.start()
 
     def test_checks_api_key_for_protected_endpoints(self):
         endpoints = (
@@ -79,7 +59,7 @@ class AuthFilterTest(unittest.TestCase):
             '/v0/job/by_scene/test-scene-id',
             '/v0/job/by_productline/test-productline-id',
             '/v0/productline',
-            '/some/random/unmapped/path',
+            '/random/path/somebody/maybe/forgot/to/protect',
         )
         for endpoint in endpoints:
             self.request.reset_mock()
@@ -90,9 +70,10 @@ class AuthFilterTest(unittest.TestCase):
 
     def test_allows_public_endpoints_to_pass_through(self):
         endpoints = (
-            '/',
+            '/favicon.ico',
             '/login',
-            '/login/geoaxis',
+            '/login/callback',
+            '/logout',
         )
         for endpoint in endpoints:
             self.request.reset_mock()
@@ -104,22 +85,27 @@ class AuthFilterTest(unittest.TestCase):
         self.request.path = '/protected'
         self.request.authorization = None
         self.session['api_key'] = 'test-api-key-from-session'
-        self.assertFalse(hasattr(self.request, 'user'))
+
         middleware.auth_filter()
-        self.assertEqual(call('test-api-key-from-session'), self.mock_authenticate.call_args)
+
+        self.mock_authenticate.call_args.assert_called_once_with('test-api-key-from-session')
 
     def test_can_read_api_key_from_authorization_header(self):
         self.request.path = '/protected'
         self.request.authorization = {'username': 'test-api-key-from-auth-header'}
-        self.assertFalse(hasattr(self.request, 'user'))
+
         middleware.auth_filter()
-        self.assertEqual(call('test-api-key-from-auth-header'), self.mock_authenticate.call_args)
+
+        self.mock_authenticate.call_args.assert_called_once_with('test-api-key-from-auth-header')
 
     def test_attaches_user_to_request(self):
         self.request.path = '/protected'
         self.request.authorization = {'username': 'test-api-key'}
+
         self.assertFalse(hasattr(self.request, 'user'))
+
         middleware.auth_filter()
+
         self.assertIsInstance(self.request.user, users.User)
         self.assertEqual('test-user-id', self.request.user.user_id)
         self.assertEqual('test-api-key', self.request.user.api_key)
@@ -152,243 +138,190 @@ class AuthFilterTest(unittest.TestCase):
         self.assertEqual(('Cannot authenticate request: an internal error prevents API key verification', 500), response)
 
 
-class CSRFFilterTest(unittest.TestCase):
+class CSRFFilterTest(helpers.MockableTestCase):
     maxDiff = 4096
 
     def setUp(self):
-        self.logger = helpers.get_logger('bfapi.middleware')
-        self.request = self.create_mock('flask.request',
-                                        spec=flask.Request,
+        self.logger = helpers.get_logger('beachfront.middleware')
+        self.request = self.create_mock('flask.request', spec=flask.Request,
+                                        authorization={},
                                         headers={},
-                                        method='GET',
-                                        referrer=None,
-                                        remote_addr='1.2.3.4',
-                                        is_xhr=False)
+                                        method='POST',
+                                        path='/v0/test-path',
+                                        referrer='https://test-referrer.localdomain',
+                                        remote_addr='1.2.3.4')
+        self.session = self.create_mock('flask.session', new={})
 
     def tearDown(self):
         self.logger.destroy()
 
-    def create_mock(self, target_name, **kwargs):
-        patcher = patch(target_name, **kwargs)
-        self.addCleanup(patcher.stop)
-        return patcher.start()
+    def test_allows_when_method_is_rfc_2616_safe(self):
+        self.session['api_key'] = 'test-api-key'
 
-    def test_allows_non_cors_requests(self):
-        endpoints = (
-            '/v0/services',
-            '/v0/algorithm',
-            '/v0/algorithm/test-service-id',
-            '/v0/job',
-            '/v0/job/test-job-id',
-            '/v0/job/by_scene/test-scene-id',
-            '/v0/job/by_productline/test-productline-id',
-            '/v0/productline',
-            '/some/random/unmapped/path',
-        )
-        for endpoint in endpoints:
+        for method in ('GET', 'OPTIONS', 'HEAD'):
             self.request.reset_mock()
-            self.request.path = endpoint
-            self.request.headers['Origin'] = None
-            self.request.referrer = None
-            self.request.is_xhr = False
+            self.request.method = method
             response = middleware.csrf_filter()
+
             self.assertIsNone(response)
 
-    def test_allows_cors_requests_from_authorized_origins(self):
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
+    def test_blocks_when_method_is_not_rfc_2616_safe(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+
+        for method in ('POST', 'PUT', 'DELETE', 'PATCH', 'BISCUIT'):
             self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.is_xhr = True
+            self.request.method = method
+
             response = middleware.csrf_filter()
-            self.assertIsNone(response)
 
-    def test_allows_cors_preflights_from_authorized_origins(self):
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.method = 'OPTIONS'
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.headers['Access-Control-Request-Headers'] = 'Content-Type,X-Requested-With'
-            self.request.is_xhr = False
-            response = middleware.csrf_filter()
-            self.assertIsNone(response)
+            self.assertEqual(('Access Denied: CSRF check failed', 403), response)
 
-    def test_rejects_cors_requests_from_unknown_origins(self):
-        origins = (
-            'http://beachfront.geointservices.io',  # Not HTTPS
-            'http://bf-swagger.geointservices.io',  # Not HTTPS
-            'http://instaspotifriendspacebooksterifygram.com',
-            'https://beachfront.geointservices.io.totallynotaphishingattempt.com',
-            'https://bf-swagger.geointservices.io.totallynotaphishingattempt.com',
-        )
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.is_xhr = True
-            response = middleware.csrf_filter()
-            self.assertEqual(('Access Denied: CORS request validation failed', 403), response)
+    def test_allows_when_session_is_not_open(self):
+        self.session.clear()
 
-    def test_rejects_cors_preflights_from_unknown_origins(self):
-        origins = (
-            'http://beachfront.geointservices.io',  # Not HTTPS
-            'http://bf-swagger.geointservices.io',  # Not HTTPS
-            'http://instaspotifriendspacebooksterifygram.com',
-            'https://beachfront.geointservices.io.totallynotaphishingattempt.com',
-            'https://bf-swagger.geointservices.io.totallynotaphishingattempt.com',
-        )
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.method = 'OPTIONS'
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.headers['Access-Control-Request-Headers'] = 'Content-Type,X-Requested-With'
-            self.request.is_xhr = True
-            response = middleware.csrf_filter()
-            self.assertEqual(('Access Denied: CORS request validation failed', 403), response)
+        response = middleware.csrf_filter()
 
-    def test_rejects_cors_requests_that_look_spoofed(self):
-        """
-        Background:
+        self.assertIsNone(response)
 
-        If `Origin` is empty and `Referrer` is not, more than likely the call
-        came from an <img/> or <script/> tag, neither of which are legit uses
-        """
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = None
-            self.request.referrer = origin
-            response = middleware.csrf_filter()
-            self.assertEqual(('Access Denied: CORS request validation failed', 403), response)
+    def test_blocks_when_session_is_open(self):
+        self.session['api_key'] = 'test-api-key'
 
-    def test_rejects_cors_requests_not_marked_as_xhr(self):
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.referrer = origin
-            self.request.is_xhr = False
-            response = middleware.csrf_filter()
-            self.assertEqual(('Access Denied: CORS request validation failed', 403), response)
+        response = middleware.csrf_filter()
 
-    def test_logs_rejection_of_cors_requests_from_unknown_origin(self):
-        origins = (
-            'http://beachfront.geointservices.io',  # Not HTTPS
-            'http://bf-swagger.geointservices.io',  # Not HTTPS
-            'http://instaspotifriendspacebooksterifygram.com',
-            'https://beachfront.geointservices.io.totallynotaphishingattempt.com',
-            'https://bf-swagger.geointservices.io.totallynotaphishingattempt.com',
-        )
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.is_xhr = True
-            middleware.csrf_filter()
+        self.assertEqual(('Access Denied: CSRF check failed', 403), response)
+
+    def test_allows_when_csrf_token_header_is_correct(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+        self.request.headers['X-XSRF-Token'] = 'test-csrf-token'
+
+        response = middleware.csrf_filter()
+
+        self.assertIsNone(response)
+
+    def test_blocks_when_csrf_token_header_is_not_correct(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+        self.request.headers['X-XSRF-Token'] = 'definitely not the token'
+
+        response = middleware.csrf_filter()
+
+        self.assertEqual(('Access Denied: CSRF check failed', 403), response)
+
+    def test_blocks_when_csrf_token_header_is_blank(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+        self.request.headers['X-XSRF-Token'] = ''
+
+        response = middleware.csrf_filter()
+
+        self.assertEqual(('Access Denied: CSRF check failed', 403), response)
+
+    def test_blocks_when_csrf_token_header_is_absent(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+        self.request.headers.clear()
+
+        response = middleware.csrf_filter()
+
+        self.assertEqual(('Access Denied: CSRF check failed', 403), response)
+
+    def test_allows_when_api_key_is_present_and_well_formed(self):
+        self.session['api_key'] = 'test-api-key'
+        self.request.authorization = {'username': 'abcdef1234567890abcdef1234567890'}
+
+        response = middleware.csrf_filter()
+
+        self.assertIsNone(response)
+
+    def test_blocks_when_api_key_is_present_and_malformed(self):
+        self.session['api_key'] = 'test-api-key'
+        self.request.authorization = {'username': 'totally malformed'}
+
+        response = middleware.csrf_filter()
+
+        self.assertEqual(('Access Denied: CSRF check failed', 403), response)
+
+    def test_logs_rejections(self):
+        self.session['api_key'] = 'test-api-key'
+        self.session['csrf_token'] = 'test-csrf-token'
+        self.request.headers['X-XSRF-Token'] = 'definitely not the token'
+        self.request.headers['X-Requested-With'] = 'test-x-requested-with'
+        self.request.headers['Origin'] = 'http://test-origin.localdomain'
+        self.request.referrer = 'http://test-referrer.localdomain'
+
+        middleware.csrf_filter()
+
         self.assertEqual([
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://beachfront.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://bf-swagger.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://instaspotifriendspacebooksterifygram.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.geointservices.io.totallynotaphishingattempt.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.geointservices.io.totallynotaphishingattempt.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-        ], self.logger.lines)
-
-    def test_logs_rejection_of_cors_preflights_from_unknown_origin(self):
-        origins = (
-            'http://beachfront.geointservices.io',  # Not HTTPS
-            'http://bf-swagger.geointservices.io',  # Not HTTPS
-            'http://instaspotifriendspacebooksterifygram.com',
-            'https://beachfront.geointservices.io.totallynotaphishingattempt.com',
-            'https://bf-swagger.geointservices.io.totallynotaphishingattempt.com',
-        )
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.headers['Access-Control-Request-Headers'] = 'Content-Type,X-Requested-With'
-            self.request.is_xhr = False
-            middleware.csrf_filter()
-        self.assertEqual([
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://beachfront.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://bf-swagger.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`http://instaspotifriendspacebooksterifygram.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.geointservices.io.totallynotaphishingattempt.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.geointservices.io.totallynotaphishingattempt.com` referrer=`None` ip=`1.2.3.4` is_xhr=`True`',
-        ], self.logger.lines)
-
-    def test_logs_rejection_of_cors_requests_not_marked_as_xhr(self):
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = origin
-            self.request.is_xhr = False
-            middleware.csrf_filter()
-        self.assertEqual([
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.dev.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.int.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.stage.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://beachfront.arbitrary.subdomain.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.dev.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.int.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.stage.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://bf-swagger.arbitrary.subdomain.geointservices.io` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`https://localhost:8080` referrer=`None` ip=`1.2.3.4` is_xhr=`False`',
-        ], self.logger.lines)
-
-    def test_logs_rejection_of_cors_requests_that_look_spoofed(self):
-        origins = AUTHORIZED_ORIGINS
-        for origin in origins:
-            self.request.reset_mock()
-            self.request.path = '/protected'
-            self.request.headers['Origin'] = None
-            self.request.referrer = origin
-            self.request.is_xhr = False
-            middleware.csrf_filter()
-        self.assertEqual([
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://beachfront.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://beachfront.dev.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://beachfront.int.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://beachfront.stage.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://beachfront.arbitrary.subdomain.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://bf-swagger.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://bf-swagger.dev.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://bf-swagger.int.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://bf-swagger.stage.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://bf-swagger.arbitrary.subdomain.geointservices.io` ip=`1.2.3.4` is_xhr=`False`',
-            'WARNING - Possible CSRF attempt: endpoint=`/protected` origin=`None` referrer=`https://localhost:8080` ip=`1.2.3.4` is_xhr=`False`',
+            'WARNING - Possible CSRF attempt:',
+            '---',
+            '',
+            'Path: /v0/test-path',
+            '',
+            'Origin: http://test-origin.localdomain',
+            '',
+            'Referrer: http://test-referrer.localdomain',
+            '',
+            'IP: 1.2.3.4',
+            '',
+            'X-Requested-With: test-x-requested-with',
+            '',
+            'X-CSRF-Token: definitely not the token',
+            '',
+            '---',
         ], self.logger.lines)
 
 
-class HTTPSFilterTest(unittest.TestCase):
+class HTTPSFilterTest(helpers.MockableTestCase):
     def setUp(self):
-        self.logger = helpers.get_logger('bfapi.middleware')
-
-        self.request = self.create_mock('flask.request', path='/test-path', referrer='http://test-referrer')
-
-    def create_mock(self, target_name, **kwargs):
-        patcher = patch(target_name, **kwargs)
-        self.addCleanup(patcher.stop)
-        return patcher.start()
+        self.logger = helpers.get_logger('beachfront.middleware')
+        self.request = self.create_mock('flask.request',
+                                        path='/test-path',
+                                        referrer='http://test-referrer',
+                                        is_secure=False)
 
     def tearDown(self):
         self.logger.destroy()
 
-    def test_rejects_non_https_requests(self):
-        self.request.is_secure = False
+    def test_when_disabled_allows_https_requests(self):
+        self.create_mock('beachfront.middleware.ENFORCE_HTTPS', new=False)
+        self.request.is_secure = True
+
         response = middleware.https_filter()
+
+        self.assertIsNone(response)
+
+    def test_when_disabled_allows_non_https_requests(self):
+        self.create_mock('beachfront.middleware.ENFORCE_HTTPS', new=False)
+        self.request.is_secure = False
+
+        response = middleware.https_filter()
+
+        self.assertIsNone(response)
+
+    def test_when_enabled_allows_https_requests(self):
+        self.create_mock('beachfront.middleware.ENFORCE_HTTPS', new=True)
+        self.request.is_secure = True
+
+        response = middleware.https_filter()
+
+        self.assertIsNone(response)
+
+    def test_when_enabled_rejects_non_https_requests(self):
+        self.create_mock('beachfront.middleware.ENFORCE_HTTPS', new=True)
+        self.request.is_secure = False
+
+        response = middleware.https_filter()
+
         self.assertEqual(('Access Denied: Please retry with HTTPS', 403), response)
 
     def test_logs_rejection(self):
+        self.create_mock('beachfront.middleware.ENFORCE_HTTPS', new=True)
         self.request.is_secure = False
+
         middleware.https_filter()
+
         self.assertEqual([
             'WARNING - Rejecting non-HTTPS request: endpoint=`/test-path` referrer=`http://test-referrer`',
         ], self.logger.lines)

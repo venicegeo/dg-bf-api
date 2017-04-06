@@ -25,7 +25,7 @@ DATE_START = datetime.utcfromtimestamp(1400000000)
 DATE_STOP = datetime.utcfromtimestamp(1500000000)
 
 
-@patch('bfapi.service.algorithms.get')
+@patch('beachfront.services.algorithms.get')
 class CreateProductlineTest(unittest.TestCase):
     maxDiff = 1024
 
@@ -219,7 +219,7 @@ class CreateProductlineTest(unittest.TestCase):
         )
         self.assertEqual(DATE_STOP.isoformat(), record.stop_on.isoformat())
 
-    @patch('bfapi.db.productlines.insert_productline')
+    @patch('beachfront.db.productlines.insert_productline')
     def test_saves_correct_data_to_database(self, mock_insert: MagicMock, mock_get_algo: MagicMock):
         mock_get_algo.return_value = create_algorithm()
         productlines.create_productline(
@@ -311,8 +311,8 @@ class DeleteProductLineTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
 
-        self.mock_delete = self.create_mock('bfapi.db.productlines.delete_productline')
-        self.mock_select = self.create_mock('bfapi.db.productlines.select_productline')
+        self.mock_delete = self.create_mock('beachfront.db.productlines.delete_productline')
+        self.mock_select = self.create_mock('beachfront.db.productlines.select_productline')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -354,7 +354,7 @@ class DeleteProductLineTest(unittest.TestCase):
             productlines.delete_productline('test-user-id', 'test-productline-id')
 
 
-@patch('bfapi.db.productlines.select_all')
+@patch('beachfront.db.productlines.select_all')
 class GetAllTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()

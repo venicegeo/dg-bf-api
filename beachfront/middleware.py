@@ -29,7 +29,7 @@ PATTERNS_PUBLIC_ENDPOINTS = (
     re.compile(r'^/$'),
     re.compile(r'^/favicon.ico$'),
     re.compile(r'^/login$'),
-    re.compile(r'^/login/callback'),
+    re.compile(r'^/login/callback$'),
     re.compile(r'^/logout$'),
     re.compile(r'^/v0/scene/[^/]+.TIF$'),
 )
@@ -56,7 +56,7 @@ def auth_filter():
 
     # Check Authorization header
     if not api_key and request.authorization:
-        api_key = request.authorization['username'].strip()
+        api_key = request.authorization['username']
 
     if not api_key:
         if _is_public_endpoint(request.path):
@@ -78,8 +78,7 @@ def auth_filter():
 def csrf_filter():
     """
     Basic protection against Cross-Site Request Forgery in accordance with OWASP
-    recommendations.  This middleware uses heuristics to identify CORS requests
-    and checks the origin of those against the list of allowed origins.
+    recommendations.
 
     Reference:
       https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet
@@ -104,20 +103,20 @@ def csrf_filter():
         log.debug('Allow: CSRF token matches')
         return
 
-    if request.authorization and users.is_api_key(request.authorization.username):
+    if request.authorization and users.is_api_key(request.authorization['username']):
         log.debug('Allow: API-key-based access')
         return
 
     # ...and reject everything else
+
     log.warning('Possible CSRF attempt:\n'
                 '---\n\n'
-                'Endpoint: %s\n'
-                'Origin: %s\n'
-                'Referrer: %s\n'
-                'IP: %s\n'
-                'X-Requested-With: %s\n'
-                'X-CSRF-Token: %s\n'
-                '              %s (expected value)\n\n'
+                'Path: %s\n\n'
+                'Origin: %s\n\n'
+                'Referrer: %s\n\n'
+                'IP: %s\n\n'
+                'X-Requested-With: %s\n\n'
+                'X-CSRF-Token: %s\n\n'
                 '---',
                 request.path,
                 request.headers.get('Origin'),
@@ -125,9 +124,8 @@ def csrf_filter():
                 request.remote_addr,
                 request.headers.get('X-Requested-With'),
                 request.headers.get('X-XSRF-Token'),
-                session.get('csrf_token'),
                 )
-    return 'Access Denied: CORS request validation failed', 403
+    return 'Access Denied: CSRF check failed', 403
 
 
 def https_filter():
@@ -139,7 +137,10 @@ def https_filter():
         return
 
     if request.is_secure:
-        log.debug('Allowing HTTPS request: endpoint=`%s` referrer=`%s`', request.path, request.referrer)
+        log.debug('Allowing HTTPS request:\n'
+                  '---\n\n'
+                  'Path: %s\n'
+                  'Referrer=`%s`', request.path, request.referrer)
         return
 
     log.warning('Rejecting non-HTTPS request: endpoint=`%s` referrer=`%s`',

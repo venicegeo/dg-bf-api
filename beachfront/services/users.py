@@ -84,7 +84,7 @@ def authenticate_via_geoaxis(auth_code: str) -> User:
 
     user = get_by_id(profile.distinguished_name)
     if not user:
-        user = _create_user(profile.distinguished_name, profile.username)
+        user = _create_user(profile.distinguished_name, profile.commonname)
 
     log.info('User "%s" has logged in successfully', user.user_id, actor=user.user_id, action='logged in')
 

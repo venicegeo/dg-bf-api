@@ -30,7 +30,7 @@ def login_callback():
     try:
         user = users.authenticate_via_geoaxis(auth_code)
     except users.GeoAxisError as err:
-        return str(err), 503
+        return 'Cannot log in: {}'.format(err), 500
     except users.Error:
         return 'Cannot log in: an internal error prevents authentication', 500
 

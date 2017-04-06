@@ -32,17 +32,17 @@ class CreateJobTest(unittest.TestCase):
 
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
         self.mock_requests = rm.Mocker()  # type: rm.Mocker
         self.mock_requests.start()
         self.addCleanup(self.mock_requests.stop)
-        self.mock_execute = self.create_mock('bfapi.service.piazza.execute')
-        self.mock_activate_scene = self.create_mock('bfapi.service.scenes.activate')
-        self.mock_get_scene = self.create_mock('bfapi.service.scenes.get')
-        self.mock_get_algo = self.create_mock('bfapi.service.algorithms.get')
-        self.mock_insert_job = self.create_mock('bfapi.db.jobs.insert_job')
-        self.mock_insert_job_user = self.create_mock('bfapi.db.jobs.insert_job_user')
+        self.mock_execute = self.create_mock('beachfront.services.piazza.execute')
+        self.mock_activate_scene = self.create_mock('beachfront.services.scenes.activate')
+        self.mock_get_scene = self.create_mock('beachfront.services.scenes.get')
+        self.mock_get_algo = self.create_mock('beachfront.services.algorithms.get')
+        self.mock_insert_job = self.create_mock('beachfront.db.jobs.insert_job')
+        self.mock_insert_job_user = self.create_mock('beachfront.db.jobs.insert_job_user')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -251,7 +251,7 @@ class CreateJobTest(unittest.TestCase):
                    ' --threshold 0.5' +
                    ' --tolerance 0.075' +
                    ' shoreline.geojson',
-            'inExtFiles': ['https://bf-api.test.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
+            'inExtFiles': ['https://bf-api.test-domain.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
             'inExtNames': ['multispectral.TIF'],
             'outGeoJson': ['shoreline.geojson'],
             'userID': 'test-user-id',
@@ -264,7 +264,7 @@ class CreateJobTest(unittest.TestCase):
         self.assertEqual('test-algo-id', self.mock_execute.call_args[0][0])
         self.assertEqual({
             'cmd': '-i multispectral.TIF --bands 2 4 --basename shoreline',
-            'inExtFiles': ['https://bf-api.test.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
+            'inExtFiles': ['https://bf-api.test-domain.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
             'inExtNames': ['multispectral.TIF'],
             'outGeoJson': ['shoreline.geojson'],
             'userID': 'test-user-id',
@@ -277,7 +277,7 @@ class CreateJobTest(unittest.TestCase):
         self.assertEqual('test-algo-id', self.mock_execute.call_args[0][0])
         self.assertEqual({
             'cmd': '-i multispectral.TIF --bands 2 5 --basename shoreline',
-            'inExtFiles': ['https://bf-api.test.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
+            'inExtFiles': ['https://bf-api.test-domain.localdomain/v0/scene/test-scene-id.TIF?planet_api_key=test-planet-api-key'],
             'inExtNames': ['multispectral.TIF'],
             'outGeoJson': ['shoreline.geojson'],
             'userID': 'test-user-id',
@@ -385,12 +385,12 @@ class CreateJobTest(unittest.TestCase):
             jobs.create('test-user-id', 'test-scene-id', 'test-algo-id', 'test-name', 'test-planet-api-key')
 
 
-@patch('bfapi.db.jobs.delete_job_user')
-@patch('bfapi.db.jobs.exists')
+@patch('beachfront.db.jobs.delete_job_user')
+@patch('beachfront.db.jobs.exists')
 class ForgetJobTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -415,11 +415,11 @@ class ForgetJobTest(unittest.TestCase):
             jobs.forget('test-user-id', 'test-job-id')
 
 
-@patch('bfapi.db.jobs.select_jobs_for_user')
+@patch('beachfront.db.jobs.select_jobs_for_user')
 class GetAllJobsTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -528,12 +528,12 @@ class GetAllJobsTest(unittest.TestCase):
             jobs.get_all('test-user-id')
 
 
-@patch('bfapi.db.jobs.select_detections')
-@patch('bfapi.db.jobs.exists', return_value=True)
+@patch('beachfront.db.jobs.select_detections')
+@patch('beachfront.db.jobs.exists', return_value=True)
 class GetDetectionsTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -571,12 +571,12 @@ class GetDetectionsTest(unittest.TestCase):
             jobs.get_detections('test-job-id')
 
 
-@patch('bfapi.db.jobs.insert_job_user')
-@patch('bfapi.db.jobs.select_job')
+@patch('beachfront.db.jobs.insert_job_user')
+@patch('beachfront.db.jobs.select_job')
 class GetJobTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -673,11 +673,11 @@ class GetJobTest(unittest.TestCase):
         self.assertEqual({'job_id': 'test-job-id', 'user_id': 'test-user-id'}, mock_insert.call_args[1])
 
 
-@patch('bfapi.db.jobs.select_jobs_for_productline')
+@patch('beachfront.db.jobs.select_jobs_for_productline')
 class GetByProductlineTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -791,11 +791,11 @@ class GetByProductlineTest(unittest.TestCase):
             jobs.get_by_productline('test-productline-id', LAST_WEEK)
 
 
-@patch('bfapi.db.jobs.select_jobs_for_scene')
+@patch('beachfront.db.jobs.select_jobs_for_scene')
 class GetBySceneTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -904,11 +904,11 @@ class GetBySceneTest(unittest.TestCase):
             jobs.get_by_scene('test-scene-id')
 
 
-@patch('bfapi.service.jobs.Worker')
+@patch('beachfront.services.jobs.Worker')
 class StartWorkerTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         jobs.stop_worker()
@@ -940,11 +940,11 @@ class StartWorkerTest(unittest.TestCase):
             jobs.start_worker()
 
 
-@patch('bfapi.service.jobs.Worker')
+@patch('beachfront.services.jobs.Worker')
 class StopWorkerTest(unittest.TestCase):
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs')
 
     def tearDown(self):
         self._mockdb.destroy()
@@ -972,19 +972,19 @@ class WorkerRunTest(unittest.TestCase):
 
     def setUp(self):
         self._mockdb = helpers.mock_database()
-        self.logger = helpers.get_logger('bfapi.service.jobs.worker')
-        self._logger_for_module = helpers.get_logger('bfapi.service.jobs')
+        self.logger = helpers.get_logger('beachfront.services.jobs.worker')
+        self._logger_for_module = helpers.get_logger('beachfront.services.jobs')
         self._logger_for_module.disabled = True
 
         self.mock_sleep = self.create_mock('time.sleep')
         self.mock_thread = self.create_mock('threading.Thread')
-        self.mock_getfile = self.create_mock('bfapi.service.piazza.get_file')
-        self.mock_getstatus = self.create_mock('bfapi.service.piazza.get_status')
-        self.mock_insert_detections = self.create_mock('bfapi.db.jobs.insert_detection')
-        self.mock_select_jobs = self.create_mock('bfapi.db.jobs.select_outstanding_jobs')
+        self.mock_getfile = self.create_mock('beachfront.services.piazza.get_file')
+        self.mock_getstatus = self.create_mock('beachfront.services.piazza.get_status')
+        self.mock_insert_detections = self.create_mock('beachfront.db.jobs.insert_detection')
+        self.mock_select_jobs = self.create_mock('beachfront.db.jobs.select_outstanding_jobs')
         self.mock_select_jobs.return_value.fetchall.return_value = []
-        self.mock_update_status = self.create_mock('bfapi.db.jobs.update_status')
-        self.mock_insert_job_failure = self.create_mock('bfapi.db.jobs.insert_job_failure')
+        self.mock_update_status = self.create_mock('beachfront.db.jobs.update_status')
+        self.mock_insert_job_failure = self.create_mock('beachfront.db.jobs.insert_job_failure')
 
     def tearDown(self):
         self._mockdb.destroy()

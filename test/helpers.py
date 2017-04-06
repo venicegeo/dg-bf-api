@@ -88,3 +88,10 @@ class MockDBConnection(unittest.mock.Mock):
         if err is None:
             err = create_database_error()
         self.execute.side_effect = err
+
+
+class MockableTestCase(unittest.TestCase):
+    def create_mock(self, target_name, *args, **kwargs):
+        patcher = unittest.mock.patch(target_name, *args, **kwargs)
+        self.addCleanup(patcher.stop)
+        return patcher.start()

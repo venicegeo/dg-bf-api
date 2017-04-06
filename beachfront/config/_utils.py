@@ -17,21 +17,21 @@ import sys
 import signal
 
 
-class _LazyVCAPServicesParser:
+class _VCAPParser:
+
     def __init__(self):
-        self._services = None
+        self._cached_services = None
 
-    def __getitem__(self, item):
-        if self._services is None:
-            self._parse_services()
-        return self._services[item]
+    @property
+    def SERVICES(self) -> dict:
+        if self._cached_services:
+            return self._cached_services
 
-    def _parse_services(self):
-        def collect(node: dict):
+        def _collect(node: dict):
             for k, v in node.items():
                 path.append(k)
                 if isinstance(v, dict):
-                    collect(v)
+                    _collect(v)
                 else:
                     services['.'.join(path)] = v
                 path.pop()
@@ -39,34 +39,29 @@ class _LazyVCAPServicesParser:
         services = {}
         path = []
 
-        vcap_services_ = os.getenv('VCAP_SERVICES')
-        if not vcap_services_:
-            raise _LazyVCAPServicesParser.Error('VCAP_SERVICES cannot be blank')
+        vcap_services = os.getenv('VCAP_SERVICES')
+        if not vcap_services:
+            raise self.Error('VCAP_SERVICES cannot be blank')
 
         try:
-            vcap_dict = json.loads(vcap_services_)
+            vcap_dict = json.loads(vcap_services)
             for key in vcap_dict.keys():
                 for user_service in vcap_dict[key]:
                     path.append(user_service['name'])
-                    collect(user_service)
+                    _collect(user_service)
                     path.pop()
-        except TypeError as err:
-            raise _LazyVCAPServicesParser.Error('encountered malformed entry: {}'.format(err))
-        except KeyError as err:
-            raise _LazyVCAPServicesParser.Error('some entry is missing property {}'.format(err))
-        except json.JSONDecodeError as err:
-            raise _LazyVCAPServicesParser.Error('invalid JSON: {}'.format(err))
         except Exception as err:
-            raise _LazyVCAPServicesParser.Error(err)
+            raise self.Error('in VCAP_SERVICES, {}: {}'.format(err.__class__.__name__, err))
 
-        self._services = services
+        self._cached_services = services
+
+        return services
 
     class Error(Exception):
-        def __init__(self, cause):
-            super().__init__(': {}'.format(cause))
+        pass
 
 
-vcap_services = _LazyVCAPServicesParser()
+VCAP = _VCAPParser()
 
 
 def validate(fatal: bool = True):

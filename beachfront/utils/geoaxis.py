@@ -108,6 +108,7 @@ class Profile(object):
         self.first_name = properties['firstname']
         self.last_name = properties['lastname']
         self.username = properties['username']
+        self.commonname = properties['commonname']
 
 
 #
