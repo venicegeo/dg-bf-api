@@ -5,12 +5,12 @@ cd $(dirname $(dirname $0))  # Return to root
 ################################################################################
 
 
+set -a
+. _environment-vars.sh
+set +a
+
 echo -e "\nBuilding UI\n"
 
 cd ui
-
-set -a
-. _environment-vars.sh
-
 NODE_ENV=production \
 ./node_modules/.bin/webpack --hide-modules
