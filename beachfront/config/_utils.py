@@ -74,7 +74,7 @@ def validate(fatal: bool = True):
                          'GEOAXIS_SCHEME',
                          'GEOAXIS_HOST',
                          'GEOAXIS_CLIENT_ID',
-                         'GEOAXIS_SECRET',
+                         'GEOAXIS_CLIENT_SECRET',
                          'GEOAXIS_REDIRECT_URI',
                          'GEOSERVER_SCHEME',
                          'GEOSERVER_HOST',

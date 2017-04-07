@@ -28,11 +28,11 @@ SECRET_KEY  = os.urandom(32).hex()
 CATALOG_SCHEME = 'https'
 CATALOG_HOST   = os.getenv('CATALOG_HOST')
 
-GEOAXIS_SCHEME       = 'https'
-GEOAXIS_HOST         = os.getenv('GEOAXIS_HOST')
-GEOAXIS_REDIRECT_URI = os.getenv('GEOAXIS_REDIRECT_URI', 'https://beachfront.{}/login/callback'.format(DOMAIN))
-GEOAXIS_CLIENT_ID    = os.getenv('GEOAXIS_CLIENT_ID')
-GEOAXIS_SECRET       = os.getenv('GEOAXIS_SECRET')
+GEOAXIS_SCHEME        = 'https'
+GEOAXIS_HOST          = os.getenv('GEOAXIS_HOST')
+GEOAXIS_REDIRECT_URI  = os.getenv('GEOAXIS_REDIRECT_URI', 'https://beachfront.{}/login/callback'.format(DOMAIN))
+GEOAXIS_CLIENT_ID     = os.getenv('GEOAXIS_CLIENT_ID')
+GEOAXIS_CLIENT_SECRET = os.getenv('GEOAXIS_CLIENT_SECRET')
 
 PIAZZA_SCHEME  = 'https'
 PIAZZA_HOST    = os.getenv('PIAZZA_HOST')

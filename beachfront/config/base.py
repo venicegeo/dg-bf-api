@@ -25,8 +25,6 @@ SESSION_TTL = timedelta(minutes=30)
 JOB_WORKER_INTERVAL = timedelta(seconds=60)
 JOB_TTL             = timedelta(hours=2)
 
-PIAZZA_SCHEME  = os.getenv('PIAZZA_SCHEME')
-PIAZZA_HOST    = os.getenv('PIAZZA_HOST')
 PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 
 STATIC_BASEURL = os.getenv('STATIC_BASEURL', '/static/')

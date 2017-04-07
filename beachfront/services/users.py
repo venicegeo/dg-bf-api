@@ -17,14 +17,14 @@ import uuid
 from datetime import datetime
 
 from beachfront import db
-from beachfront.config import GEOAXIS_HOST, GEOAXIS_SCHEME, GEOAXIS_CLIENT_ID, GEOAXIS_SECRET, GEOAXIS_REDIRECT_URI
+from beachfront.config import GEOAXIS_HOST, GEOAXIS_SCHEME, GEOAXIS_CLIENT_ID, GEOAXIS_CLIENT_SECRET, GEOAXIS_REDIRECT_URI
 from beachfront.utils import geoaxis
 
 
 TIMEOUT = 12
 PATTERN_API_KEY = re.compile('^[a-f0-9]{32}$')
 
-_oauth_client = geoaxis.OAuth2Client(GEOAXIS_SCHEME, GEOAXIS_HOST, GEOAXIS_CLIENT_ID, GEOAXIS_SECRET)
+_oauth_client = geoaxis.OAuth2Client(GEOAXIS_SCHEME, GEOAXIS_HOST, GEOAXIS_CLIENT_ID, GEOAXIS_CLIENT_SECRET)
 
 
 class User:
