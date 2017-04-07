@@ -13,22 +13,4 @@ if [ $JENKINS_HOME ]; then
     . /opt/rh/rh-python35/enable
 fi
 
-# Create or enter virtual environment
-if [ ! -f .env/bin/activate ]; then
-    virtualenv --python=python3.5 .env
-fi
-. .env/bin/activate
-
-pip install -r requirements.txt
-
-## Run Tests ###################################################################
-
-# Grab environment variables
-set -a;
-. test/fixtures/environment-vars.test.sh
-set +a
-
-coverage run --source=bfapi -m unittest discover
-coverage xml -o report/coverage/coverage.xml
-coverage html -d report/coverage/html
-coverage report
+echo yes | ./scripts/test.sh

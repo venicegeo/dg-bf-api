@@ -7,8 +7,10 @@ cd $(dirname $(dirname $0))  # Return to root
 
 . venv/bin/activate
 
-set -a
+set -a;
 . test/_fixtures/environment-vars.sh
 
 coverage run --source=beachfront -m unittest
+coverage xml -o report/coverage/coverage.xml
+coverage html -d report/coverage/html
 coverage report
