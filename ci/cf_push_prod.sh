@@ -1,7 +1,9 @@
 #!/bin/bash -ex
 
-export GEOAXIS_DOMAIN=gxisaccess.gxaccess.com
-export PIAZZA_URL=https://piazza.geointservices.io/v2/key
 export MANIFEST_FILENAME=manifest.prod.yml
+
+export GEOAXIS_HOST=gxisaccess.gxaccess.com
+export CATALOG_HOST=bf-ia-broker.geointservices.io
+export PIAZZA_HOST=piazza.geointservices.io
 
 ./ci/_cf_push.sh
