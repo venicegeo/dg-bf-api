@@ -36,5 +36,5 @@ GEOAXIS_REDIRECT_URI = 'http://localhost:5000/login/callback'
 
 GEOSERVER_SCHEME   = 'http'
 GEOSERVER_HOST     = 'localhost:8080'
-GEOSERVER_USERNAME = 'beachfront'
-GEOSERVER_PASSWORD = 'secret'
+GEOSERVER_USERNAME = 'admin'
+GEOSERVER_PASSWORD = 'geoserver'

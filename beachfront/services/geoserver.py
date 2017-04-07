@@ -12,13 +12,16 @@
 # specific language governing permissions and limitations under the License.
 
 import logging
+import urllib.parse
 
 import requests
 
-from beachfront.config import GEOSERVER_HOST, GEOSERVER_SCHEME, GEOSERVER_USERNAME, GEOSERVER_PASSWORD
+from beachfront.config import GEOSERVER_HOST, GEOSERVER_SCHEME, GEOSERVER_USERNAME, GEOSERVER_PASSWORD, DATABASE_URI
 
-DETECTIONS_LAYER_ID = 'bfdetections'
-DETECTIONS_STYLE_ID = 'bfdetections'
+WORKSPACE_ID = 'beachfront'
+DATASTORE_ID = 'postgres'
+DETECTIONS_LAYER_ID = 'detections'
+DETECTIONS_STYLE_ID = 'detections'
 TIMEOUT = 24
 
 
@@ -29,30 +32,140 @@ def create_wms_url():
 def install_if_needed():
     log = logging.getLogger(__name__)
 
-    is_installed = True
+    install_needed = False
+
+    if not workspace_exists():
+        install_needed = True
+        install_workspace()
+
+    if not datastore_exists():
+        install_needed = True
+        install_datastore()
 
     if not layer_exists(DETECTIONS_LAYER_ID):
-        is_installed = False
+        install_needed = True
         install_layer(DETECTIONS_LAYER_ID)
 
     if not style_exists(DETECTIONS_STYLE_ID):
-        is_installed = False
+        install_needed = True
         install_style(DETECTIONS_STYLE_ID)
 
-    if is_installed:
-        log.info('GeoServer components exist and will not be reinstalled')
-    else:
+    if install_needed:
         log.info('Installation complete!')
+    else:
+        log.info('GeoServer components exist and will not be reinstalled')
+
+
+def install_datastore():
+    log = logging.getLogger(__name__)
+
+    log.info('Installing datastore `%s`', DATASTORE_ID, action='install datastore', actee='geoserver')
+
+    database_uri = urllib.parse.urlparse(DATABASE_URI)
+    try:
+        response = requests.post(
+            '{}://{}/geoserver/rest/workspaces/{}/datastores'.format(
+                GEOSERVER_SCHEME,
+                GEOSERVER_HOST,
+                WORKSPACE_ID,
+            ),
+            auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
+            timeout=TIMEOUT,
+            headers={
+                'Content-Type': 'application/xml',
+            },
+            data="""
+                <dataStore>
+                    <name>{datastore_id}</name>
+                    <type>PostGIS</type>
+                    <connectionParameters>
+                        <entry key="database">{database_name}</entry>
+                        <entry key="host">{database_host}</entry>
+                        <entry key="port">{database_port}</entry>
+                        <entry key="passwd">{database_password}</entry>
+                        <entry key="dbtype">postgis</entry>
+                        <entry key="user">{database_username}</entry>
+                    </connectionParameters>
+                </dataStore>
+            """.format(
+                datastore_id=DATASTORE_ID,
+                database_name=database_uri.path.strip('/'),
+                database_host=database_uri.hostname,
+                database_port=database_uri.port,
+                database_username=database_uri.username,
+                database_password=database_uri.password,
+            )
+        )
+    except requests.ConnectionError as err:
+        log.error('Cannot communicate with GeoServer: %s', err)
+        raise InstallError()
+
+    if response.status_code != 201:
+        log.error('Cannot create datastore `%s`:\n'
+                  '---\n\n'
+                  'HTTP %d\n\n'
+                  'URL: %s\n\n'
+                  'Status: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  DATASTORE_ID,
+                  response.status_code,
+                  response.request.url,
+                  response.text)
+        raise InstallError()
+
+
+def install_workspace():
+    log = logging.getLogger(__name__)
+
+    log.info('Installing workspace `%s`', WORKSPACE_ID, action='install workspace', actee='geoserver')
+    try:
+        response = requests.post(
+            '{}://{}/geoserver/rest/workspaces'.format(
+                GEOSERVER_SCHEME,
+                GEOSERVER_HOST,
+            ),
+            auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
+            timeout=TIMEOUT,
+            headers={
+                'Content-Type': 'application/xml',
+            },
+            data="""
+                <workspace>
+                    <name>{workspace_id}</name>
+                </workspace>
+            """.format(workspace_id=WORKSPACE_ID)
+        )
+    except requests.ConnectionError as err:
+        log.error('Cannot communicate with GeoServer: %s', err)
+        raise InstallError()
+
+    if response.status_code != 201:
+        log.error('Cannot create workspace `%s`:\n'
+                  '---\n\n'
+                  'HTTP %d\n\n'
+                  'URL: %s\n\n'
+                  'Status: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  WORKSPACE_ID,
+                  response.status_code,
+                  response.request.url,
+                  response.text)
+        raise InstallError()
 
 
 def install_layer(layer_id: str):
     log = logging.getLogger(__name__)
+
     log.info('Installing `%s`', layer_id, action='install layer', actee='geoserver')
     try:
         response = requests.post(
-            '{}://{}/geoserver/rest/workspaces/piazza/datastores/piazza/featuretypes'.format(
+            '{}://{}/geoserver/rest/workspaces/{}/datastores/{}/featuretypes'.format(
                 GEOSERVER_SCHEME,
                 GEOSERVER_HOST,
+                WORKSPACE_ID,
+                DATASTORE_ID,
             ),
             auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
             timeout=TIMEOUT,
@@ -118,17 +231,23 @@ def install_layer(layer_id: str):
                 </featureType>
             """.strip().format(layer_id=layer_id),
         )
-        response.raise_for_status()
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
-        raise GeoServerError()
-    except requests.HTTPError as err:
-        log.error('Cannot create layer `%s`: HTTP %d on %s to %s',
+        raise InstallError()
+
+    if response.status_code != 201:
+        log.error('Cannot create layer `%s`:\n'
+                  '---\n\n'
+                  'HTTP %d\n\n'
+                  'URL: %s\n\n'
+                  'Status: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
                   layer_id,
-                  err.response.status_code,
-                  err.request.method,
-                  err.request.url)
-        raise GeoServerError()
+                  response.status_code,
+                  response.request.url,
+                  response.text)
+        raise InstallError()
 
 
 def install_style(style_id: str):
@@ -189,14 +308,40 @@ def install_style(style_id: str):
         response.raise_for_status()
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
-        raise GeoServerError()
+        raise InstallError()
     except requests.HTTPError as err:
-        log.error('Cannot create style `%s`: HTTP %d on %s to %s',
+        log.error('Cannot create style `%s`:\n'
+                  '---\n\n'
+                  'HTTP %d\n\n'
+                  'URL: %s\n\n'
+                  'Status: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
                   style_id,
                   err.response.status_code,
-                  err.request.method,
-                  err.request.url)
-        raise GeoServerError()
+                  err.response.request.url,
+                  err.response.text)
+        raise InstallError()
+
+
+def datastore_exists() -> bool:
+    log = logging.getLogger(__name__)
+    log.info('Checking for existence of datastore `%s`', DATASTORE_ID, action='check for datastore', actee='geoserver')
+    try:
+        response = requests.get(
+            '{}://{}/geoserver/rest/workspaces/{}/datastores/{}'.format(
+                GEOSERVER_SCHEME,
+                GEOSERVER_HOST,
+                WORKSPACE_ID,
+                DATASTORE_ID,
+            ),
+            auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
+            timeout=TIMEOUT,
+        )
+    except requests.ConnectionError as err:
+        log.error('Cannot communicate with GeoServer: %s', err)
+        raise InstallError()
+    return response.status_code == 200
 
 
 def layer_exists(layer_id: str) -> bool:
@@ -214,7 +359,7 @@ def layer_exists(layer_id: str) -> bool:
         )
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
-        raise GeoServerError()
+        raise InstallError()
     return response.status_code == 200
 
 
@@ -233,7 +378,26 @@ def style_exists(style_id: str) -> bool:
         )
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
-        raise GeoServerError()
+        raise InstallError()
+    return response.status_code == 200
+
+
+def workspace_exists() -> bool:
+    log = logging.getLogger(__name__)
+    log.info('Checking for existence of workspace `%s`', WORKSPACE_ID, action='check for workspace', actee='geoserver')
+    try:
+        response = requests.get(
+            '{}://{}/geoserver/rest/workspaces/{}'.format(
+                GEOSERVER_SCHEME,
+                GEOSERVER_HOST,
+                WORKSPACE_ID,
+            ),
+            auth=(GEOSERVER_USERNAME, GEOSERVER_PASSWORD),
+            timeout=TIMEOUT,
+        )
+    except requests.ConnectionError as err:
+        log.error('Cannot communicate with GeoServer: %s', err)
+        raise InstallError()
     return response.status_code == 200
 
 
@@ -241,6 +405,5 @@ def style_exists(style_id: str) -> bool:
 # Errors
 #
 
-class GeoServerError(Exception):
-    def __init__(self, message: str = 'error communicating with GeoServer'):
-        super().__init__(message)
+class InstallError(Exception):
+    pass
