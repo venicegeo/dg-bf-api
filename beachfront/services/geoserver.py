@@ -20,7 +20,7 @@ from beachfront.config import GEOSERVER_HOST, GEOSERVER_SCHEME, GEOSERVER_USERNA
 
 WORKSPACE_ID = 'beachfront'
 DATASTORE_ID = 'postgres'
-DETECTIONS_LAYER_ID = 'detections'
+DETECTIONS_LAYER_ID = 'all_detections'
 DETECTIONS_STYLE_ID = 'detections'
 TIMEOUT = 24
 
@@ -96,6 +96,15 @@ def install_datastore():
                 database_password=database_uri.password,
             )
         )
+        log.debug('Sent request to geoserver:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  'Request: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  response.request.url,
+                  response.request.body,
+                  response.text)
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
         raise InstallError()
@@ -105,12 +114,13 @@ def install_datastore():
                   '---\n\n'
                   'HTTP %d\n\n'
                   'URL: %s\n\n'
-                  'Status: %s\n\n'
+                  'Request: %s\n\n'
                   'Response: %s\n\n'
                   '---',
                   DATASTORE_ID,
                   response.status_code,
                   response.request.url,
+                  response.request.body,
                   response.text)
         raise InstallError()
 
@@ -136,6 +146,15 @@ def install_workspace():
                 </workspace>
             """.format(workspace_id=WORKSPACE_ID)
         )
+        log.debug('Sent request to geoserver:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  'Request: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  response.request.url,
+                  response.request.body,
+                  response.text)
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
         raise InstallError()
@@ -145,7 +164,6 @@ def install_workspace():
                   '---\n\n'
                   'HTTP %d\n\n'
                   'URL: %s\n\n'
-                  'Status: %s\n\n'
                   'Response: %s\n\n'
                   '---',
                   WORKSPACE_ID,
@@ -175,7 +193,7 @@ def install_layer(layer_id: str):
             data=r"""
                 <featureType>
                     <name>{layer_id}</name>
-                    <title>Beachfront Detections</title>
+                    <title>All Detections</title>
                     <srs>EPSG:4326</srs>
                     <nativeBoundingBox>
                         <minx>-180.0</minx>
@@ -231,6 +249,15 @@ def install_layer(layer_id: str):
                 </featureType>
             """.strip().format(layer_id=layer_id),
         )
+        log.debug('Sent request to geoserver:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  'Request: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  response.request.url,
+                  response.request.body,
+                  response.text)
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
         raise InstallError()
@@ -240,12 +267,13 @@ def install_layer(layer_id: str):
                   '---\n\n'
                   'HTTP %d\n\n'
                   'URL: %s\n\n'
-                  'Status: %s\n\n'
+                  'Request: %s\n\n'
                   'Response: %s\n\n'
                   '---',
                   layer_id,
                   response.status_code,
                   response.request.url,
+                  response.request.body,
                   response.text)
         raise InstallError()
 
@@ -285,6 +313,15 @@ def install_style(style_id: str):
                 'name': style_id,
             },
         )
+        log.debug('Sent request to geoserver:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  'Request: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  response.request.url,
+                  response.request.body,
+                  response.text)
         response.raise_for_status()
         response = requests.put(
             '{}://{}/geoserver/rest/layers/{}'.format(
@@ -306,6 +343,15 @@ def install_style(style_id: str):
             },
         )
         response.raise_for_status()
+        log.debug('Sent request to geoserver:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  'Request: %s\n\n'
+                  'Response: %s\n\n'
+                  '---',
+                  response.request.url,
+                  response.request.body,
+                  response.text)
     except requests.ConnectionError as err:
         log.error('Cannot communicate with GeoServer: %s', err)
         raise InstallError()
@@ -314,12 +360,13 @@ def install_style(style_id: str):
                   '---\n\n'
                   'HTTP %d\n\n'
                   'URL: %s\n\n'
-                  'Status: %s\n\n'
+                  'Payload: %s\n\n'
                   'Response: %s\n\n'
                   '---',
                   style_id,
                   err.response.status_code,
                   err.response.request.url,
+                  err.response.request.body,
                   err.response.text)
         raise InstallError()
 

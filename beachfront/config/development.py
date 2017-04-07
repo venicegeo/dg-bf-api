@@ -18,7 +18,7 @@ DOMAIN = 'int.geointservices.io'
 
 ENFORCE_HTTPS = False
 
-DATABASE_URI = 'postgres://beachfront:secret@localhost/beachfront'
+DATABASE_URI = 'postgres://beachfront:secret@localhost:5432/beachfront'
 
 SECRET_KEY = 'secret'
 

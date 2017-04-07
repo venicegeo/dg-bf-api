@@ -28,7 +28,7 @@ class InstallIfNeededTest(unittest.TestCase):
     def test_calls_correct_urls(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/workspaces/beachfront')
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres')
-        m.get('/geoserver/rest/layers/detections')
+        m.get('/geoserver/rest/layers/all_detections')
         m.get('/geoserver/rest/styles/detections')
 
         geoserver.install_if_needed()
@@ -36,14 +36,14 @@ class InstallIfNeededTest(unittest.TestCase):
         self.assertEqual([
             'https://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront',
             'https://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront/datastores/postgres',
-            'https://vcap-geoserver.test.localdomain/geoserver/rest/layers/detections',
+            'https://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
             'https://vcap-geoserver.test.localdomain/geoserver/rest/styles/detections',
         ], [h.url for h in m.request_history])
 
     def test_sends_correct_credentials(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/workspaces/beachfront')
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres')
-        m.get('/geoserver/rest/layers/detections')
+        m.get('/geoserver/rest/layers/all_detections')
         m.get('/geoserver/rest/styles/detections')
 
         geoserver.install_if_needed()
@@ -58,7 +58,7 @@ class InstallIfNeededTest(unittest.TestCase):
     def test_installs_workspace_if_missing(self, m):
         m.get('/geoserver/rest/workspaces/beachfront', status_code=404)
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres')
-        m.get('/geoserver/rest/layers/detections')
+        m.get('/geoserver/rest/layers/all_detections')
         m.get('/geoserver/rest/styles/detections')
 
         with patch('beachfront.services.geoserver.install_workspace') as stub:
@@ -69,7 +69,7 @@ class InstallIfNeededTest(unittest.TestCase):
     def test_installs_datastore_if_missing(self, m):
         m.get('/geoserver/rest/workspaces/beachfront')
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres', status_code=404)
-        m.get('/geoserver/rest/layers/detections')
+        m.get('/geoserver/rest/layers/all_detections')
         m.get('/geoserver/rest/styles/detections')
 
         with patch('beachfront.services.geoserver.install_datastore') as stub:
@@ -80,17 +80,17 @@ class InstallIfNeededTest(unittest.TestCase):
     def test_installs_detections_layer_if_missing(self, m):
         m.get('/geoserver/rest/workspaces/beachfront')
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres')
-        m.get('/geoserver/rest/layers/detections', status_code=404)
+        m.get('/geoserver/rest/layers/all_detections', status_code=404)
         m.get('/geoserver/rest/styles/detections')
 
         with patch('beachfront.services.geoserver.install_layer') as stub:
             geoserver.install_if_needed()
-            stub.assert_called_once_with('detections')
+            stub.assert_called_once_with('all_detections')
 
     def test_installs_detections_style_if_missing(self, m):
         m.get('/geoserver/rest/workspaces/beachfront')
         m.get('/geoserver/rest/workspaces/beachfront/datastores/postgres')
-        m.get('/geoserver/rest/layers/detections')
+        m.get('/geoserver/rest/layers/all_detections')
         m.get('/geoserver/rest/styles/detections', status_code=404)
 
         with patch('beachfront.services.geoserver.install_style') as stub:
@@ -143,53 +143,53 @@ class InstallLayerTest(unittest.TestCase):
 class InstallStyleTest(unittest.TestCase):
     def test_calls_correct_url_when_creating_sld(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
         self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/styles?name=test-style-id',
                          m.request_history[0].url)
 
     def test_calls_correct_url_when_setting_default_style(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/layers/detections',
+        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
                          m.request_history[1].url)
 
     def test_sends_correct_credentials_when_creating_sld(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
         self.assertEqual('Basic dGVzdC11c2VybmFtZTp0ZXN0LXBhc3N3b3Jk', m.request_history[0].headers['Authorization'])
 
     def test_sends_correct_credentials_when_setting_default_style(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
         self.assertEqual('Basic dGVzdC11c2VybmFtZTp0ZXN0LXBhc3N3b3Jk', m.request_history[1].headers['Authorization'])
 
     def test_sends_correct_payload_when_creating_sld(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
         xml = et.fromstring(m.request_history[0].text)  # type: et.ElementTree
         self.assertEqual('#FF00FF', xml.findtext('.//sld:CssParameter', namespaces=XMLNS))
 
     def test_sends_correct_payload_when_setting_default_style(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
         xml = et.fromstring(m.request_history[1].text)  # type: et.ElementTree
         self.assertEqual('detections', xml.findtext('defaultStyle/name'))
 
     def test_throws_on_http_error_when_creating_sld(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles', status_code=500)
-        m.put('/geoserver/rest/layers/detections')
+        m.put('/geoserver/rest/layers/all_detections')
         with self.assertRaises(geoserver.InstallError):
             geoserver.install_style('test-style-id')
 
     def test_throws_on_http_error_when_setting_default_style(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
-        m.put('/geoserver/rest/layers/detections', status_code=500)
+        m.put('/geoserver/rest/layers/all_detections', status_code=500)
         with self.assertRaises(geoserver.InstallError):
             geoserver.install_style('test-style-id')
 
