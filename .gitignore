@@ -20,6 +20,3 @@ beachfront.zip
 vendor
 .coverage
 report
-manifest.int.yml
-manifest.stage.yml
-manifest.prod.yml

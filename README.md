@@ -1,9 +1,7 @@
 # beachfront
 
-[![Build Status](https://travis-ci.org/venicegeo/bf-api.svg?branch=master)](https://travis-ci.org/venicegeo/bf-api)
-
-> A web application and services for automated coastline extraction from satellite
-> imagery.
+> API service for the Beachfront project. This is the central point of interaction
+> for the Beachfront front-end.
 
 
 ## Running locally for development

@@ -30,6 +30,7 @@ def apply_middlewares(app: flask.Flask):
 
 def attach_routes(app: flask.Flask):
     app.add_url_rule(methods=['GET'], rule='/', view_func=routes.ui)
+    app.add_url_rule(methods=['GET'], rule='/keepalive', view_func=routes.keepalive)
     app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.login)
     app.add_url_rule(methods=['GET'], rule='/login/callback', view_func=routes.login_callback)
     app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.logout)
@@ -75,7 +76,6 @@ def init(app: flask.Flask):
         return config.STATIC_BASEURL + path
 
     app.add_template_global(static_url_for)
-
 
     try:
         install_service_assets()

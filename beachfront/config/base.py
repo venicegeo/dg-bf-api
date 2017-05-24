@@ -22,8 +22,9 @@ ENFORCE_HTTPS = True
 
 SESSION_TTL = timedelta(minutes=30)
 
-JOB_WORKER_INTERVAL = timedelta(seconds=60)
-JOB_TTL             = timedelta(hours=2)
+JOB_WORKER_MAX_RETRIES = 3
+JOB_WORKER_INTERVAL    = timedelta(seconds=60)
+JOB_TTL                = timedelta(hours=2)
 
 PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 

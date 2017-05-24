@@ -34,7 +34,7 @@ def login_callback():
     except users.Error:
         return 'Cannot log in: an internal error prevents authentication', 500
 
-    flask.session.permanent = True
+    flask.session.permanent = False
     flask.session['api_key'] = user.api_key
     flask.session['csrf_token'] = os.urandom(32).hex()
 
@@ -56,6 +56,7 @@ def ui():
     return flask.render_template('ui.jinja2',
                                  user=flask.request.user)
 
+
 def logout():
     log = logging.getLogger(__name__)
 
@@ -72,3 +73,7 @@ def logout():
 
 def _is_logged_in():
     return hasattr(flask.request, 'user')
+
+
+def keepalive():
+    return '', 204
