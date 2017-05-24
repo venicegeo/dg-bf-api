@@ -16,4 +16,5 @@
 
 SELECT COUNT(table_name) > 0 AS is_installed
   FROM information_schema.tables
- WHERE table_name LIKE '__beachfront__%';
+ WHERE table_name IN ('geoserver', 'provenance', 'detection', 'productline_job',
+                      'productline', 'job_error', 'job_user', 'job', 'scene', 'user');

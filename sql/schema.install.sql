@@ -14,14 +14,15 @@
 
 -- SQL Dialect: PostgreSQL + PostGIS
 
-CREATE TABLE __beachfront__user (
+CREATE TABLE "user" (
     user_id           VARCHAR(255)   PRIMARY KEY,
     user_name         VARCHAR(100)   NOT NULL,
     api_key           VARCHAR(40)    NOT NULL    UNIQUE,
+    password_hash     VARCHAR(255)   NOT NULL,
     created_on        TIMESTAMPTZ    NOT NULL    DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE __beachfront__scene (
+CREATE TABLE "scene" (
     scene_id          VARCHAR(64)    PRIMARY KEY,
     captured_on       TIMESTAMPTZ    NOT NULL,
     cloud_cover       FLOAT          NOT NULL,
@@ -31,7 +32,7 @@ CREATE TABLE __beachfront__scene (
     catalog_uri       VARCHAR(255)   NOT NULL
 );
 
-CREATE TABLE __beachfront__job (
+CREATE TABLE "job" (
     job_id            VARCHAR(64)    PRIMARY KEY,
     algorithm_id      VARCHAR(64)    NOT NULL,
     algorithm_name    VARCHAR(100)   NOT NULL,
@@ -45,37 +46,37 @@ CREATE TABLE __beachfront__job (
     tide_min_24h      FLOAT,
     tide_max_24h      FLOAT,
 
-    FOREIGN KEY (created_by) REFERENCES __beachfront__user(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (scene_id) REFERENCES __beachfront__scene(scene_id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES "user"(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (scene_id) REFERENCES "scene"(scene_id) ON DELETE CASCADE
 );
 
-CREATE TABLE __beachfront__detection (
+CREATE TABLE "detection" (
     job_id            VARCHAR(64),
     feature_id        INT,
     geometry          GEOMETRY       NOT NULL,
 
     PRIMARY KEY (job_id, feature_id),
-    FOREIGN KEY (job_id) REFERENCES __beachfront__job(job_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
 );
 
-CREATE TABLE __beachfront__job_user (
+CREATE TABLE "job_user" (
     job_id            VARCHAR(64),
     user_id           VARCHAR(255),
 
     PRIMARY KEY (job_id, user_id),
-    FOREIGN KEY (job_id) REFERENCES __beachfront__job(job_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES __beachfront__user(user_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE __beachfront__job_error (
+CREATE TABLE "job_error" (
     job_id            VARCHAR(64)    PRIMARY KEY,
     error_message     VARCHAR(64)    NOT NULL,
     execution_step    VARCHAR(64)    NOT NULL,  -- e.g., 'fetch', 'compute', 'deployment', 'async'
 
-    FOREIGN KEY (job_id) REFERENCES __beachfront__job(job_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
 );
 
-CREATE TABLE __beachfront__productline (
+CREATE TABLE "productline" (
 -- TODO -- add check constraint for start_on/stop_on
     productline_id    VARCHAR(64)    PRIMARY KEY,
     algorithm_id      VARCHAR(64)    NOT NULL,  -- Pz Service ID
@@ -93,20 +94,20 @@ CREATE TABLE __beachfront__productline (
     start_on          DATE           NOT NULL,
     stop_on           DATE,
 
-    FOREIGN KEY (created_by) REFERENCES __beachfront__user(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (owned_by) REFERENCES __beachfront__user(user_id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES "user"(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (owned_by) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE __beachfront__productline_job (
+CREATE TABLE "productline_job" (
     productline_id    VARCHAR(64),
     job_id            VARCHAR(64),
 
     PRIMARY KEY (productline_id, job_id),
-    FOREIGN KEY (productline_id) REFERENCES __beachfront__productline(productline_id) ON DELETE CASCADE,
-    FOREIGN KEY (job_id) REFERENCES __beachfront__job(job_id) ON DELETE CASCADE
+    FOREIGN KEY (productline_id) REFERENCES "productline"(productline_id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
 );
 
-CREATE VIEW __beachfront__provenance AS
+CREATE VIEW "provenance" AS
 SELECT j.job_id,
        j.algorithm_id,
        j.algorithm_name,
@@ -123,16 +124,15 @@ SELECT j.job_id,
        j.tide_min_24h,
        j.tide_max_24h,
        s.captured_on AS time_of_collect,
-      'NOT FOR TARGETING OR NAVIGATION PURPOSES'::varchar AS data_usage,
-      'UNCLASSIFIED'::varchar                             AS classification
-  FROM __beachfront__job j
-       JOIN __beachfront__scene s ON (s.scene_id = j.scene_id);
+      'NOT FOR TARGETING OR NAVIGATION PURPOSES'::varchar AS data_usage
+  FROM job j
+       JOIN "scene" s ON (s.scene_id = j.scene_id);
 
-CREATE VIEW __beachfront__geoserver AS
+CREATE VIEW "geoserver" AS
 SELECT p.*,
        d.feature_id,
        d.geometry,
        plj.productline_id
-  FROM __beachfront__detection d
-       JOIN __beachfront__provenance p ON (p.job_id = d.job_id)
-       LEFT OUTER JOIN __beachfront__productline_job plj ON (plj.job_id = d.job_id);
+  FROM detection d
+       JOIN "provenance" p ON (p.job_id = d.job_id)
+       LEFT OUTER JOIN "productline_job" plj ON (plj.job_id = d.job_id);
