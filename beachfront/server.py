@@ -11,11 +11,10 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import os
-import signal
 import sys
 
 import flask
+import flask_cors
 
 from beachfront import config, db, middleware, routes, services
 from beachfront import DEBUG_MODE, MUTE_LOGS
@@ -29,13 +28,12 @@ def apply_middlewares(app: flask.Flask):
 
 
 def attach_routes(app: flask.Flask):
-    app.add_url_rule(methods=['GET'], rule='/', view_func=routes.ui)
-    app.add_url_rule(methods=['GET'], rule='/keepalive', view_func=routes.keepalive)
-    app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.login)
-    app.add_url_rule(methods=['GET'], rule='/login/callback', view_func=routes.login_callback)
-    app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.logout)
+    app.add_url_rule(methods=['GET'], rule='/keepalive', view_func=routes.auth.keepalive)
+    app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.auth.login)
+    app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.auth.logout)
 
     app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
+    flask_cors.CORS(app, max_age=1200, supports_credentials=True)
 
 
 def banner():
@@ -85,9 +83,7 @@ def init(app: flask.Flask):
     except Exception as err:
         print(err)
         print('!' * 80, 'Initialization failed', err, '!' * 80, sep='\n\n', file=sys.stderr, flush=True)
-        os.kill(os.getppid(), signal.SIGQUIT)
-        signal.pause()
-        exit(1)
+        exit(4)  # Tell gunicorn not to infinitely respawn
 
 
 def install_service_assets():

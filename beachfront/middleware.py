@@ -19,18 +19,10 @@ import flask
 from beachfront.config import ENFORCE_HTTPS
 from beachfront.services import users
 
-PATTERNS_AUTHORIZED_ORIGINS = (
-    re.compile(r'^https://beachfront(\.[^.]+)*\.geointservices\.io$'),
-    re.compile(r'^https://bf-swagger(\.[^.]+)*\.geointservices\.io$'),
-    re.compile(r'^https://localhost:8080$'),
-)
-
 PATTERNS_PUBLIC_ENDPOINTS = (
     re.compile(r'^/$'),
     re.compile(r'^/favicon.ico$'),
     re.compile(r'^/login$'),
-    re.compile(r'^/login/callback$'),
-    re.compile(r'^/logout$'),
     re.compile(r'^/v0/scene/[^/]+.TIF$'),
 )
 

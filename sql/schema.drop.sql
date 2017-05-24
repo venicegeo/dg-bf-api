@@ -14,13 +14,13 @@
 
 -- SQL Dialect: PostgreSQL + PostGIS
 
-DROP VIEW IF EXISTS "geoserver";
-DROP VIEW IF EXISTS "provenance";
-DROP TABLE IF EXISTS "detection";
-DROP TABLE IF EXISTS "productline_job";
-DROP TABLE IF EXISTS "productline";
-DROP TABLE IF EXISTS "job_error";
-DROP TABLE IF EXISTS "job_user";
-DROP TABLE IF EXISTS "job";
-DROP TABLE IF EXISTS "scene";
-DROP TABLE IF EXISTS "user";
+DROP VIEW IF EXISTS geoserver;
+DROP VIEW IF EXISTS provenance;
+DROP TABLE IF EXISTS detection;
+DROP TABLE IF EXISTS productline_job;
+DROP TABLE IF EXISTS productline;
+DROP TABLE IF EXISTS job_error;
+DROP TABLE IF EXISTS job_user;
+DROP TABLE IF EXISTS job;
+DROP TABLE IF EXISTS scene;
+DROP TABLE IF EXISTS useraccount;

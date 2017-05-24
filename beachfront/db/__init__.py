@@ -14,7 +14,6 @@
 import logging
 import os.path
 import pprint
-import signal
 
 import sqlalchemy as sa
 from sqlalchemy.exc import DatabaseError
@@ -51,9 +50,7 @@ def init():
             '-' * 80,
             sep='\n\n',
         )
-        os.kill(os.getppid(), signal.SIGQUIT)
-        signal.pause()
-        exit(1)
+        exit(4)  # Tell gunicorn not to infinitely respawn
 
 
 def print_diagnostics(err: DatabaseError):

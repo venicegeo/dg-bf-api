@@ -5,6 +5,8 @@ cd $(dirname $(dirname $0))  # Return to root
 ################################################################################
 
 
+. $VIRTUALENV_ROOT/bin/activate
+
 set -a
 . test/_fixtures/environment-vars.sh
 set +a

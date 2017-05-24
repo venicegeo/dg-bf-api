@@ -14,7 +14,7 @@
 
 -- SQL Dialect: PostgreSQL + PostGIS
 
-CREATE TABLE "user" (
+CREATE TABLE useraccount (
     user_id           VARCHAR(255)   PRIMARY KEY,
     user_name         VARCHAR(100)   NOT NULL,
     api_key           VARCHAR(40)    NOT NULL    UNIQUE,
@@ -22,7 +22,7 @@ CREATE TABLE "user" (
     created_on        TIMESTAMPTZ    NOT NULL    DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "scene" (
+CREATE TABLE scene (
     scene_id          VARCHAR(64)    PRIMARY KEY,
     captured_on       TIMESTAMPTZ    NOT NULL,
     cloud_cover       FLOAT          NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE "scene" (
     catalog_uri       VARCHAR(255)   NOT NULL
 );
 
-CREATE TABLE "job" (
+CREATE TABLE job (
     job_id            VARCHAR(64)    PRIMARY KEY,
     algorithm_id      VARCHAR(64)    NOT NULL,
     algorithm_name    VARCHAR(100)   NOT NULL,
@@ -46,37 +46,37 @@ CREATE TABLE "job" (
     tide_min_24h      FLOAT,
     tide_max_24h      FLOAT,
 
-    FOREIGN KEY (created_by) REFERENCES "user"(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (scene_id) REFERENCES "scene"(scene_id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES useraccount(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (scene_id) REFERENCES scene(scene_id) ON DELETE CASCADE
 );
 
-CREATE TABLE "detection" (
+CREATE TABLE detection (
     job_id            VARCHAR(64),
     feature_id        INT,
     geometry          GEOMETRY       NOT NULL,
 
     PRIMARY KEY (job_id, feature_id),
-    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
-CREATE TABLE "job_user" (
+CREATE TABLE job_user (
     job_id            VARCHAR(64),
     user_id           VARCHAR(255),
 
     PRIMARY KEY (job_id, user_id),
-    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES useraccount(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE "job_error" (
+CREATE TABLE job_error (
     job_id            VARCHAR(64)    PRIMARY KEY,
     error_message     VARCHAR(64)    NOT NULL,
     execution_step    VARCHAR(64)    NOT NULL,  -- e.g., 'fetch', 'compute', 'deployment', 'async'
 
-    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
+    FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
-CREATE TABLE "productline" (
+CREATE TABLE productline (
 -- TODO -- add check constraint for start_on/stop_on
     productline_id    VARCHAR(64)    PRIMARY KEY,
     algorithm_id      VARCHAR(64)    NOT NULL,  -- Pz Service ID
@@ -94,20 +94,20 @@ CREATE TABLE "productline" (
     start_on          DATE           NOT NULL,
     stop_on           DATE,
 
-    FOREIGN KEY (created_by) REFERENCES "user"(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (owned_by) REFERENCES "user"(user_id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES useraccount(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (owned_by) REFERENCES useraccount(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE "productline_job" (
+CREATE TABLE productline_job (
     productline_id    VARCHAR(64),
     job_id            VARCHAR(64),
 
     PRIMARY KEY (productline_id, job_id),
-    FOREIGN KEY (productline_id) REFERENCES "productline"(productline_id) ON DELETE CASCADE,
-    FOREIGN KEY (job_id) REFERENCES "job"(job_id) ON DELETE CASCADE
+    FOREIGN KEY (productline_id) REFERENCES productline(productline_id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
-CREATE VIEW "provenance" AS
+CREATE VIEW provenance AS
 SELECT j.job_id,
        j.algorithm_id,
        j.algorithm_name,
@@ -126,13 +126,13 @@ SELECT j.job_id,
        s.captured_on AS time_of_collect,
       'NOT FOR TARGETING OR NAVIGATION PURPOSES'::varchar AS data_usage
   FROM job j
-       JOIN "scene" s ON (s.scene_id = j.scene_id);
+       JOIN scene s ON (s.scene_id = j.scene_id);
 
-CREATE VIEW "geoserver" AS
+CREATE VIEW geoserver AS
 SELECT p.*,
        d.feature_id,
        d.geometry,
        plj.productline_id
   FROM detection d
-       JOIN "provenance" p ON (p.job_id = d.job_id)
-       LEFT OUTER JOIN "productline_job" plj ON (plj.job_id = d.job_id);
+       JOIN provenance p ON (p.job_id = d.job_id)
+       LEFT OUTER JOIN productline_job plj ON (plj.job_id = d.job_id);

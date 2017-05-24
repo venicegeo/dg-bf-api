@@ -18,7 +18,7 @@ DOMAIN = 'int.geointservices.io'
 
 ENFORCE_HTTPS = False
 
-DATABASE_URI = 'postgres://beachfront:secret@localhost:5432/beachfront'
+DATABASE_URI = 'postgres://coastline:secret@localhost:5432/coastline'
 
 SECRET_KEY = 'secret'
 
@@ -27,12 +27,6 @@ CATALOG_HOST   = 'bf-ia-broker.int.geointservices.io'
 
 PIAZZA_SCHEME  = 'https'
 PIAZZA_HOST    = 'piazza.int.geointservices.io'
-
-GEOAXIS_SCHEME        = 'http'
-GEOAXIS_HOST          = 'localhost:5001'
-GEOAXIS_CLIENT_ID     = 'beachfront'
-GEOAXIS_CLIENT_SECRET = 'lorem ipsum'
-GEOAXIS_REDIRECT_URI  = 'http://localhost:5000/login/callback'
 
 GEOSERVER_SCHEME   = 'http'
 GEOSERVER_HOST     = 'localhost:8080'

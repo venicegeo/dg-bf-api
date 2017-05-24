@@ -23,7 +23,7 @@ def select_user(
     log.info('Db select user', action='database query record')
     query = """
         SELECT u.user_id, u.user_name, u.api_key, u.created_on
-          FROM __beachfront__user u
+          FROM useraccount u
         WHERE u.user_id = %(user_id)s
         """
     params = {
@@ -40,7 +40,7 @@ def select_user_by_api_key(
     log.info('Db select user by api', action='database query record')
     query = """
         SELECT u.user_id, u.user_name, u.api_key, u.created_on
-          FROM __beachfront__user u
+          FROM useraccount u
          WHERE u.api_key = %(api_key)s
         """
     params = {
@@ -58,7 +58,7 @@ def insert_user(
     log = logging.getLogger(__name__)
     log.info('Db insert user', action='database insert record')
     query = """
-        INSERT INTO __beachfront__user (user_id, user_name, api_key)
+        INSERT INTO useraccount (user_id, user_name, api_key)
         VALUES (%(user_id)s, %(user_name)s, %(api_key)s)
         """
     params = {

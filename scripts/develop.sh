@@ -12,10 +12,11 @@ SERVER_PORT=${PORT:=5000}
 ################################################################################
 
 (
-    . venv/bin/activate
+    . $VIRTUALENV_ROOT/bin/activate
 
     set -a
     . _environment-vars.sh
+    set +a
 
 #    STATIC_BASEURL=http://localhost:$UI_PORT/ \
     gunicorn beachfront.server:server -b localhost:$SERVER_PORT --threads 5 --reload

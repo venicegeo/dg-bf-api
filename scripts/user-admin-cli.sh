@@ -6,4 +6,12 @@ cd $(dirname $(dirname $0))  # Return to root
 ################################################################################
 
 
-python scripts/user-admin.py add "$@"
+. $VIRTUALENV_ROOT/bin/activate
+
+set -a
+. $ENVIRONMENT_FILE
+set +a
+
+export MUTE_LOGS=1
+
+python -m beachfront.temporary_cli_for_user_admin "$@"

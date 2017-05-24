@@ -24,7 +24,7 @@ def delete_job_user(
     log = logging.getLogger(__name__)
     log.info('Db delete job user', action='database delete record')
     query = """
-        DELETE FROM __beachfront__job_user
+        DELETE FROM job_user
         WHERE job_id = %(job_id)s
               AND user_id = %(user_id)s
         """
@@ -40,7 +40,7 @@ def exists(
         *,
         job_id: str) -> bool:
     query = """
-        SELECT 1 FROM __beachfront__job WHERE job_id = %(job_id)s
+        SELECT 1 FROM job WHERE job_id = %(job_id)s
         """
     params = {
         'job_id': job_id,
@@ -57,7 +57,7 @@ def insert_detection(
     log = logging.getLogger(__name__)
     log.info('Db insert detection', action='database insert record')
     query = """
-        INSERT INTO __beachfront__detection (job_id, feature_id, geometry)
+        INSERT INTO detection (job_id, feature_id, geometry)
         SELECT %(job_id)s AS job_id,
                row_number() OVER () AS feature_id,
                ST_GeomFromGeoJSON(fc.features->>'geometry') AS geometry
@@ -88,7 +88,7 @@ def insert_job(
     log = logging.getLogger(__name__)
     log.info('Db insert job', action='database insert record')
     query = """
-        INSERT INTO __beachfront__job (job_id, algorithm_id, algorithm_name, algorithm_version, created_by, name,
+        INSERT INTO job (job_id, algorithm_id, algorithm_name, algorithm_version, created_by, name,
                                        scene_id, status, tide, tide_min_24h, tide_max_24h)
         VALUES (%(job_id)s, %(algorithm_id)s, %(algorithm_name)s, %(algorithm_version)s, %(created_by)s, %(name)s,
                 %(scene_id)s, %(status)s, %(tide)s, %(tide_min_24h)s, %(tide_max_24h)s)
@@ -118,7 +118,7 @@ def insert_job_failure(
     log = logging.getLogger(__name__)
     log.info('Db insert job failure', action='database insert record')
     query = """
-        INSERT INTO __beachfront__job_error (job_id, error_message, execution_step)
+        INSERT INTO job_error (job_id, error_message, execution_step)
         VALUES (%(job_id)s, %(error_message)s, %(execution_step)s)
         """
     params = {
@@ -137,7 +137,7 @@ def insert_job_user(
     log = logging.getLogger(__name__)
     log.info('Db job user', action='database insert record')
     query = """
-        INSERT INTO __beachfront__job_user (job_id, user_id)
+        INSERT INTO job_user (job_id, user_id)
         VALUES (%(job_id)s, %(user_id)s)
         ON CONFLICT DO NOTHING
         """
@@ -163,8 +163,8 @@ def select_detections(
                                to_json(p) AS "properties",
                                ST_AsGeoJSON(d.geometry)::json AS "geometry",
                                'Feature' AS "type"
-                          FROM __beachfront__detection d
-                               INNER JOIN __beachfront__provenance AS p ON (p.job_id = d.job_id)
+                          FROM detection d
+                               INNER JOIN provenance AS p ON (p.job_id = d.job_id)
                          WHERE d.job_id = %(job_id)s
                        ) AS f
                ) AS fc
@@ -185,9 +185,9 @@ def select_job(
         SELECT j.job_id, j.algorithm_name, j.algorithm_version, j.created_by, j.created_on, j.name, j.scene_id, j.status, j.tide, j.tide_min_24h, j.tide_max_24h,
                e.error_message, e.execution_step,
                ST_AsGeoJSON(s.geometry) AS geometry, s.sensor_name, s.captured_on
-          FROM __beachfront__job j
-               LEFT OUTER JOIN __beachfront__job_error e ON (e.job_id = j.job_id)
-               LEFT OUTER JOIN __beachfront__scene s ON (s.scene_id = j.scene_id)
+          FROM job j
+               LEFT OUTER JOIN job_error e ON (e.job_id = j.job_id)
+               LEFT OUTER JOIN scene s ON (s.scene_id = j.scene_id)
          WHERE j.job_id = %(job_id)s
         """
     params = {
@@ -210,7 +210,7 @@ def select_jobs_for_inputs(
                     WHEN 'Submitted' THEN 1
                     WHEN 'Running' THEN 2
                END AS _sort_precedence
-          FROM __beachfront__job
+          FROM job
          WHERE algorithm_id = %(algorithm_id)s
            AND scene_id = %(scene_id)s
            AND status IN ('Submitted', 'Running', 'Success')
@@ -233,9 +233,9 @@ def select_jobs_for_productline(
     query = """
         SELECT j.job_id, j.algorithm_name, j.algorithm_version, j.created_by, j.created_on, j.name, j.scene_id, j.status, j.tide, j.tide_min_24h, j.tide_max_24h,
                ST_AsGeoJSON(s.geometry) AS geometry, s.sensor_name, s.captured_on
-          FROM __beachfront__productline_job p
-               LEFT OUTER JOIN __beachfront__job j ON (j.job_id = p.job_id)
-               LEFT OUTER JOIN __beachfront__scene s ON (s.scene_id = j.scene_id)
+          FROM productline_job p
+               LEFT OUTER JOIN job j ON (j.job_id = p.job_id)
+               LEFT OUTER JOIN scene s ON (s.scene_id = j.scene_id)
          WHERE p.productline_id = %(productline_id)s
            AND (j.status IN ('Submitted', 'Running', 'Success'))
            AND (s.captured_on >= %(since)s)
@@ -257,8 +257,8 @@ def select_jobs_for_scene(
     query = """
         SELECT j.job_id, j.algorithm_name, j.algorithm_version, j.created_by, j.created_on, j.name, j.scene_id, j.status, j.tide, j.tide_min_24h, j.tide_max_24h,
                ST_AsGeoJSON(s.geometry) AS geometry, s.sensor_name, s.captured_on
-          FROM __beachfront__job j
-               LEFT OUTER JOIN __beachfront__scene s ON (s.scene_id = j.scene_id)
+          FROM job j
+               LEFT OUTER JOIN scene s ON (s.scene_id = j.scene_id)
          WHERE j.scene_id = %(scene_id)s
            AND j.status IN ('Submitted', 'Running', 'Success')
         ORDER BY created_on DESC
@@ -279,10 +279,10 @@ def select_jobs_for_user(
         SELECT j.job_id, j.algorithm_name, j.algorithm_version, j.created_by, j.created_on, j.name, j.scene_id, j.status, j.tide, j.tide_min_24h, j.tide_max_24h,
                e.error_message, e.execution_step,
                ST_AsGeoJSON(s.geometry) AS geometry, s.sensor_name, s.captured_on
-          FROM __beachfront__job j
-               LEFT OUTER JOIN __beachfront__job_user u ON (u.job_id = j.job_id)
-               LEFT OUTER JOIN __beachfront__job_error e ON (e.job_id = j.job_id)
-               LEFT OUTER JOIN __beachfront__scene s ON (s.scene_id = j.scene_id)
+          FROM job j
+               LEFT OUTER JOIN job_user u ON (u.job_id = j.job_id)
+               LEFT OUTER JOIN job_error e ON (e.job_id = j.job_id)
+               LEFT OUTER JOIN scene s ON (s.scene_id = j.scene_id)
          WHERE u.user_id = %(user_id)s
         ORDER BY created_on ASC
         """
@@ -298,7 +298,7 @@ def select_outstanding_jobs(conn: Connection) -> ResultProxy:
     query = """
         SELECT job_id,
                DATE_TRUNC('second', NOW() - created_on) AS age
-          FROM __beachfront__job
+          FROM job
          WHERE status IN ('Submitted', 'Pending', 'Running')
         ORDER BY created_on ASC
         """
@@ -313,7 +313,7 @@ def update_status(
     log = logging.getLogger(__name__)
     log.info('Db update status', action='database update record')
     query = """
-        UPDATE __beachfront__job
+        UPDATE job
            SET status = %(status)s
          WHERE job_id = %(job_id)s
         """

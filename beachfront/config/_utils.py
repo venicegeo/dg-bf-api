@@ -14,7 +14,6 @@
 import json
 import os
 import sys
-import signal
 
 
 class _VCAPParser:
@@ -71,11 +70,6 @@ def validate(fatal: bool = True):
 
     for required_key in ('DOMAIN',
                          'DATABASE_URI',
-                         'GEOAXIS_SCHEME',
-                         'GEOAXIS_HOST',
-                         'GEOAXIS_CLIENT_ID',
-                         'GEOAXIS_CLIENT_SECRET',
-                         'GEOAXIS_REDIRECT_URI',
                          'GEOSERVER_SCHEME',
                          'GEOSERVER_HOST',
                          'GEOSERVER_USERNAME',
@@ -94,8 +88,6 @@ def validate(fatal: bool = True):
     error_message = 'Configuration error:\n{}'.format('\n'.join(['\t* ' + s for s in errors]))
     if fatal:
         print('!' * 80, error_message, '!' * 80, sep='\n\n', file=sys.stderr, flush=True)
-        os.kill(os.getppid(), signal.SIGQUIT)
-        signal.pause()
-        exit(1)
+        exit(4)  # Tell gunicorn not to infinitely respawn
     else:
         raise Exception(error_message)

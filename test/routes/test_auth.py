@@ -11,8 +11,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import unittest
-
 from test import helpers
 
 from beachfront import routes
@@ -25,7 +23,7 @@ class LoginTest(helpers.MockableTestCase):
         mock_render = self.create_mock('flask.render_template', return_value='test-rendered-template')
         self.create_mock('beachfront.services.users.create_oauth_url', return_value='test-oauth-url')
 
-        response = routes.login()
+        response = routes.auth.login()
 
         self.assertEqual('test-rendered-template', response)
         mock_render.assert_called_once_with('login.jinja2', oauth_url='test-oauth-url')
@@ -42,14 +40,14 @@ class LoginCallbackTest(helpers.MockableTestCase):
     def test_rejects_when_auth_code_is_missing(self):
         self.request.args = {}
 
-        response = routes.login_callback()
+        response = routes.auth.login_callback()
 
         self.assertEqual(('Cannot log in: invalid "code" query parameter', 400), response)
 
     def test_rejects_when_auth_code_is_blank(self):
         self.request.args = {'code': ''}
 
-        response = routes.login_callback()
+        response = routes.auth.login_callback()
 
         self.assertEqual(('Cannot log in: invalid "code" query parameter', 400), response)
 
@@ -57,7 +55,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        routes.login_callback()
+        routes.auth.login_callback()
 
         self.mock_authenticate.assert_called_once_with('test-auth-code')
 
@@ -65,7 +63,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        routes.login_callback()
+        routes.auth.login_callback()
 
         self.assertEqual('test-api-key', self.session['api_key'])
 
@@ -73,7 +71,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        routes.login_callback()
+        routes.auth.login_callback()
 
         self.assertRegex(self.session['csrf_token'], r'^[0-9a-f]{64}$')
 
@@ -81,7 +79,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        routes.login_callback()
+        routes.auth.login_callback()
 
         self.mock_redirect.return_value.set_cookie.assert_called_once_with('csrf_token', self.session['csrf_token'])
 
@@ -89,7 +87,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        routes.login_callback()
+        routes.auth.login_callback()
 
         self.assertFalse(self.session.permanent)
 
@@ -97,7 +95,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
 
-        response = routes.login_callback()
+        response = routes.auth.login_callback()
 
         self.assertIs(self.mock_redirect.return_value, response)
         self.mock_redirect.assert_called_once_with('test-url-for-ui')
@@ -106,7 +104,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.side_effect = geoaxis.Unreachable()
         self.request.args = {'code': 'test-auth-code'}
 
-        response = routes.login_callback()
+        response = routes.auth.login_callback()
 
         self.assertEqual(('Cannot log in: GeoAxis is unreachable', 500), response)
 
@@ -114,7 +112,7 @@ class LoginCallbackTest(helpers.MockableTestCase):
         self.mock_authenticate.side_effect = users.Error('oh noes')
         self.request.args = {'code': 'test-auth-code'}
 
-        response = routes.login_callback()
+        response = routes.auth.login_callback()
 
         self.assertEqual(('Cannot log in: an internal error prevents authentication', 500), response)
 
@@ -127,7 +125,7 @@ class LogoutTest(helpers.MockableTestCase):
         self.request = self.create_mock('flask.request')
 
     def test_clears_session(self):
-        routes.logout()
+        routes.auth.logout()
 
         self.assertTrue(self.session.clear.called)
 
