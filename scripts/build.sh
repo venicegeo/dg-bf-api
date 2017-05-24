@@ -6,10 +6,11 @@ cd $(dirname $(dirname $0))  # Return to root
 
 
 set -a
-. test/_fixtures/environment-vars.sh
+. _environment-vars.sh
 set +a
 
-coverage run --source=beachfront -m unittest
-coverage xml -o report/coverage/coverage.xml
-coverage html -d report/coverage/html
-coverage report
+#echo -e "\nBuilding UI\n"
+#
+#cd ui
+#NODE_ENV=production \
+#./node_modules/.bin/webpack --hide-modules

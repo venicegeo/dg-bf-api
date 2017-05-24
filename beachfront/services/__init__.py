@@ -11,22 +11,4 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import unittest.mock
-
-from beachfront import db
-
-
-class GetConnectionTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
-
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
-
-
-class InstallTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
-
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+from beachfront.services import piazza, algorithms, geoserver, scenes, jobs, productlines  # Order matters here

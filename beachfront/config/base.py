@@ -11,22 +11,21 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import unittest.mock
+import os
+from datetime import timedelta
 
-from beachfront import db
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+DOMAIN = os.getenv('DOMAIN')
 
-class GetConnectionTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
+ENFORCE_HTTPS = True
 
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+SESSION_TTL = timedelta(minutes=30)
 
+JOB_WORKER_MAX_RETRIES = 3
+JOB_WORKER_INTERVAL    = timedelta(seconds=60)
+JOB_TTL                = timedelta(hours=2)
 
-class InstallTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
+PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+STATIC_BASEURL = os.getenv('STATIC_BASEURL', '/static/')

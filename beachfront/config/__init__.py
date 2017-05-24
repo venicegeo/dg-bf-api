@@ -11,22 +11,17 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import unittest.mock
+import os
 
-from beachfront import db
+from . import _utils
 
+_config = os.getenv('CONFIG')
 
-class GetConnectionTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
+print('\nUsing config "{}"\n'.format(_config))
 
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+if _config == 'development':
+    from .development import *
+elif _config == 'production':
+    from .production import *
 
-
-class InstallTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
-
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+_utils.validate()

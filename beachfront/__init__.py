@@ -11,22 +11,15 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-import unittest.mock
+import os
 
-from beachfront import db
+import beachfront.logger
 
-
-class GetConnectionTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
-
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+DEBUG_MODE = os.getenv('DEBUG_MODE') == '1'
+MUTE_LOGS = os.getenv('MUTE_LOGS') == '1'
 
 
-class InstallTest(unittest.TestCase):
-    def setUp(self):
-        self.conn = unittest.mock.Mock()
-
-    def test_does_things(self):
-        self.skipTest('Not yet implemented')
+beachfront.logger.init(
+    debug=DEBUG_MODE,
+    muted=MUTE_LOGS,
+)

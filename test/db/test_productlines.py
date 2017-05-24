@@ -13,7 +13,7 @@
 
 import unittest.mock
 
-from bfapi.db import productlines as productlinesdb
+from beachfront.db import productlines as productlinesdb
 
 
 class InsertProductLineTest(unittest.TestCase):

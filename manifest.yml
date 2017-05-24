@@ -1,0 +1,17 @@
+---
+applications:
+- name: coastline-api
+  host: coastline-api
+  path: coastline-api.zip
+  memory: 1G
+  disk_quota: 1G
+  instances: 1
+  buildpack: python_buildpack
+  services:
+    - postgis
+    - geoserver
+  env:
+    CONFIG: production
+    CATALOG_HOST: ~
+    PIAZZA_HOST: ~
+    PIAZZA_API_KEY: ~

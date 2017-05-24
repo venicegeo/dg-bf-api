@@ -12,108 +12,123 @@
 # specific language governing permissions and limitations under the License.
 
 import unittest
-from unittest.mock import call, patch
 
-from bfapi import routes
-from bfapi.service import users
+from test import helpers
 
-
-@patch('flask.jsonify', side_effect=dict)
-@patch('flask.request', path='/')
-class HealthCheckTest(unittest.TestCase):
-    def test_returns_server_uptime(self, *_):
-        response = routes.health_check()
-        self.assertIn('uptime', response)
-        self.assertIsInstance(response['uptime'], float)
+from beachfront import routes
+from beachfront.services import users
+from beachfront.utils import geoaxis
 
 
-class LoginStartCheckTest(unittest.TestCase):
-    maxDiff = 4096
+class LoginTest(helpers.MockableTestCase):
+    def test_renders_login_page(self):
+        mock_render = self.create_mock('flask.render_template', return_value='test-rendered-template')
+        self.create_mock('beachfront.services.users.create_oauth_url', return_value='test-oauth-url')
 
-    def test_redirects_to_geoaxis_oauth_authorization(self):
-        response = routes.login_start()
-        self.assertEqual(
-            'https://test-geoaxis.test.localdomain/ms_oauth/oauth2/endpoints/oauthservice/authorize' +
-            '?client_id=test-geoaxis-client-id' +
-            '&redirect_uri=https%3A%2F%2Fbf-api.test.localdomain%2Flogin' +
-            '&response_type=code' +
-            '&scope=UserProfile.me',
-            response.location,
-        )
+        response = routes.login()
+
+        self.assertEqual('test-rendered-template', response)
+        mock_render.assert_called_once_with('login.jinja2', oauth_url='test-oauth-url')
 
 
-class LoginTest(unittest.TestCase):
+class LoginCallbackTest(helpers.MockableTestCase):
     def setUp(self):
-        self.mock_authenticate = self.create_mock('bfapi.service.users.authenticate_via_geoaxis', return_value=None)
+        self.mock_authenticate = self.create_mock('beachfront.services.users.authenticate_via_geoaxis', return_value=None)
         self.mock_redirect = self.create_mock('flask.redirect')
+        self.mock_url_for = self.create_mock('flask.url_for', side_effect=lambda s: 'test-url-for-{}'.format(s))
         self.request = self.create_mock('flask.request', path='/login', args={})
-        self.session = self.create_mock('flask.session', spec=dict)
-
-    def create_mock(self, target, **kwargs):
-        patcher = patch(target, **kwargs)
-        self.addCleanup(patcher.stop)
-        return patcher.start()
+        self.session = self.create_mock('flask.session', new=MockSession())
 
     def test_rejects_when_auth_code_is_missing(self):
         self.request.args = {}
-        response = routes.login()
+
+        response = routes.login_callback()
+
         self.assertEqual(('Cannot log in: invalid "code" query parameter', 400), response)
 
     def test_rejects_when_auth_code_is_blank(self):
         self.request.args = {'code': ''}
-        response = routes.login()
+
+        response = routes.login_callback()
+
         self.assertEqual(('Cannot log in: invalid "code" query parameter', 400), response)
 
     def test_passes_correct_auth_code_to_users_service(self):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
-        routes.login()
-        self.assertEqual(call('test-auth-code'), self.mock_authenticate.call_args)
+
+        routes.login_callback()
+
+        self.mock_authenticate.assert_called_once_with('test-auth-code')
 
     def test_attaches_api_key_to_session_on_auth_success(self):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
-        routes.login()
-        self.assertEqual([call('api_key', 'test-api-key')], self.session.__setitem__.call_args_list)
+
+        routes.login_callback()
+
+        self.assertEqual('test-api-key', self.session['api_key'])
+
+    def test_attaches_csrf_token_to_session_on_auth_success(self):
+        self.mock_authenticate.return_value = create_user()
+        self.request.args = {'code': 'test-auth-code'}
+
+        routes.login_callback()
+
+        self.assertRegex(self.session['csrf_token'], r'^[0-9a-f]{64}$')
+
+    def test_sets_csrf_token_cookie_on_auth_success(self):
+        self.mock_authenticate.return_value = create_user()
+        self.request.args = {'code': 'test-auth-code'}
+
+        routes.login_callback()
+
+        self.mock_redirect.return_value.set_cookie.assert_called_once_with('csrf_token', self.session['csrf_token'])
 
     def test_opts_in_to_session_expiration(self):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
-        routes.login()
+
+        routes.login_callback()
+
         self.assertFalse(self.session.permanent)
 
-    def test_redirects_to_ui_url_on_auth_success(self):
+    def test_redirects_to_ui_on_auth_success(self):
         self.mock_authenticate.return_value = create_user()
         self.request.args = {'code': 'test-auth-code'}
-        response = routes.login()
-        self.assertEqual(self.mock_redirect.return_value, response)
-        self.assertEqual(call('https://beachfront.test.localdomain?logged_in=true'), self.mock_redirect.call_args)
 
-    def test_rejects_when_credentials_are_rejected(self):
-        self.mock_authenticate.side_effect = users.Unauthorized('test-error-message')
+        response = routes.login_callback()
+
+        self.assertIs(self.mock_redirect.return_value, response)
+        self.mock_redirect.assert_called_once_with('test-url-for-ui')
+
+    def test_rejects_when_call_to_geoaxis_fails(self):
+        self.mock_authenticate.side_effect = geoaxis.Unreachable()
         self.request.args = {'code': 'test-auth-code'}
-        response = routes.login()
-        self.assertEqual(('Unauthorized: test-error-message', 401), response)
+
+        response = routes.login_callback()
+
+        self.assertEqual(('Cannot log in: GeoAxis is unreachable', 500), response)
 
     def test_rejects_when_users_service_throws(self):
         self.mock_authenticate.side_effect = users.Error('oh noes')
         self.request.args = {'code': 'test-auth-code'}
-        response = routes.login()
+
+        response = routes.login_callback()
+
         self.assertEqual(('Cannot log in: an internal error prevents authentication', 500), response)
 
 
-class LogoutTest(unittest.TestCase):
+class LogoutTest(helpers.MockableTestCase):
     def setUp(self):
-        self.session = self.create_mock('flask.session', spec=dict)
+        self.mock_url_for = self.create_mock('flask.url_for')
+        self.mock_redirect = self.create_mock('flask.redirect')
+        self.session = self.create_mock('flask.session')
         self.request = self.create_mock('flask.request')
-
-    def create_mock(self, target, **kwargs):
-        patcher = patch(target, **kwargs)
-        self.addCleanup(patcher.stop)
-        return patcher.start()
 
     def test_clears_session(self):
         routes.logout()
+
         self.assertTrue(self.session.clear.called)
 
 
@@ -127,3 +142,8 @@ def create_user():
         api_key='test-api-key',
         name='test-name',
     )
+
+
+class MockSession(dict):
+    __setitem__ = dict.__setitem__
+    __getitem__ = dict.__getitem__

@@ -13,122 +13,41 @@
 
 import os
 import unittest
-from datetime import timedelta
 
-from bfapi import config
-
-
-class ConfigurationValueTest(unittest.TestCase):
-    def test_autodetects_piazza_hostname(self):
-        self.assertEqual('piazza.test.localdomain', config.PIAZZA)
-
-    def test_autodetects_catalog_hostname(self):
-        self.assertEqual('bf-ia-broker.test.localdomain', config.CATALOG)
-
-    def test_defines_sensible_job_ttl(self):
-        self.assertGreaterEqual(config.JOB_TTL, timedelta(seconds=600))
-
-    def test_defines_sensible_job_polling_frequency(self):
-        self.assertGreaterEqual(config.JOB_WORKER_INTERVAL, timedelta(seconds=15))
+from beachfront import config
+from beachfront.config._utils import _VCAPParser
 
 
-class ConfigurationValidateTest(unittest.TestCase):
-    def setUp(self):
-        self._original_values = {}
-        self.override('_errors', [])
-        self.override('PIAZZA_API_KEY', 'test-api-key')
-        self.override('POSTGRES_HOST', 'test-host')
-        self.override('POSTGRES_PORT', 'test-port')
-        self.override('POSTGRES_DATABASE', 'test-database')
-        self.override('POSTGRES_USERNAME', 'test-username')
-        self.override('POSTGRES_PASSWORD', 'test-password')
-        self.override('GEOSERVER_HOST', 'test-host')
-        self.override('GEOSERVER_USERNAME', 'test-username')
-        self.override('GEOSERVER_PASSWORD', 'test-password')
-        self.override('GEOAXIS', 'test-host')
-        self.override('GEOAXIS_CLIENT_ID', 'test-client-id')
-        self.override('GEOAXIS_SECRET', 'test-secret')
+class ConfigValueTest(unittest.TestCase):
+    """
+    This is probably more brittle than it needs to be, but this gives some
+    small amount of protection against foot-shotgunning in prod.
+    """
 
-    def tearDown(self):
-        for key, value in self._original_values.items():
-            setattr(config, key, value)
+    def test_running_production_configuration(self):
+        self.assertEqual('production', os.getenv('CONFIG'))
 
-    def override(self, key: str, value: any):
-        self._original_values[key] = value
-        setattr(config, key, value)
-
-    def test_succeeds_if_config_is_valid(self):
-        config.validate(failfast=False)
-
-    def test_throws_if_PIAZZA_API_KEY_is_blank(self):
-        self.override('PIAZZA_API_KEY', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_POSTGRES_HOST_is_blank(self):
-        self.override('POSTGRES_HOST', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_POSTGRES_PORT_is_blank(self):
-        self.override('POSTGRES_PORT', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_POSTGRES_DATABASE_is_blank(self):
-        self.override('POSTGRES_DATABASE', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_POSTGRES_USERNAME_is_blank(self):
-        self.override('POSTGRES_USERNAME', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_POSTGRES_PASSWORD_is_blank(self):
-        self.override('POSTGRES_PASSWORD', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_GEOSERVER_HOST_is_blank(self):
-        self.override('GEOSERVER_HOST', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_GEOSERVER_USERNAME_is_blank(self):
-        self.override('GEOSERVER_USERNAME', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
-
-    def test_throws_if_GEOSERVER_PASSWORD_is_blank(self):
-        self.override('GEOSERVER_PASSWORD', None)
-        with self.assertRaises(Exception):
-            config.validate(failfast=False)
+    def test_all_schemes_set_to_https(self):
+        self.assertEqual('https', config.GEOSERVER_SCHEME)
+        self.assertEqual('https', config.PIAZZA_SCHEME)
+        self.assertEqual('https', config.CATALOG_SCHEME)
+        self.assertEqual('https', config.GEOAXIS_SCHEME)
 
 
-class ConfigureGetServices(unittest.TestCase):
+class VCAPParserTest(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
         self._VCAP_SERVICES = os.getenv('VCAP_SERVICES')
 
     def tearDown(self):
-        self.override(self._VCAP_SERVICES)
-        config._errors = []
+        os.environ['VCAP_SERVICES'] = self._VCAP_SERVICES
 
-    def override(self, value):
-        if value is None:
-            if 'VCAP_SERVICES' in os.environ:
-                os.environ.pop('VCAP_SERVICES')
-        else:
-            os.environ['VCAP_SERVICES'] = value
+    def test_can_instantiate(self):
+        _VCAPParser()
 
-    def test_always_returns_a_dictionary(self):
-        self.assertIsInstance(config._getservices(), dict)
-
-    def test_returns_defined_services(self):
-        self.override(
-            """
+    def test_can_read_VCAP_SERVICES(self):
+        os.environ['VCAP_SERVICES'] = """
             {
               "user-provided": [
                 {
@@ -161,38 +80,42 @@ class ConfigureGetServices(unittest.TestCase):
                 }
               ]
             }
-            """)
-        self.assertEqual(
-            {
-                'test-service-1.name': 'test-service-1',
-                'test-service-1.credentials.database': 'test-database',
-                'test-service-1.credentials.host': 'test-host',
-                'test-service-1.credentials.hostname': 'test-hostname',
-                'test-service-1.credentials.username': 'test-username',
-                'test-service-1.credentials.password': 'test-password',
-                'test-service-1.credentials.port': 'test-port',
-                'test-service-2.name': 'test-service-2',
-                'test-service-2.lorem': 'ipsum',
-                'test-service-2.some.arbitrarily.nested': 'value',
-                'test-service-3.name': 'test-service-3',
-                'test-service-3.credentials.applesauce': 'test-applesauce',
-            },
-            config._getservices())
+            """
+        vcap = _VCAPParser()
+        self.assertEqual({'test-service-1.name': 'test-service-1',
+                          'test-service-1.credentials.database': 'test-database',
+                          'test-service-1.credentials.host': 'test-host',
+                          'test-service-1.credentials.hostname': 'test-hostname',
+                          'test-service-1.credentials.username': 'test-username',
+                          'test-service-1.credentials.password': 'test-password',
+                          'test-service-1.credentials.port': 'test-port',
+                          'test-service-2.name': 'test-service-2',
+                          'test-service-2.lorem': 'ipsum',
+                          'test-service-2.some.arbitrarily.nested': 'value',
+                          'test-service-3.name': 'test-service-3',
+                          'test-service-3.credentials.applesauce': 'test-applesauce',
+                          }, vcap.SERVICES)
+
+    def test_throws_when_VCAP_SERVICES_is_undefined(self):
+        os.environ.pop('VCAP_SERVICES', None)
+
+        with self.assertRaisesRegex(_VCAPParser.Error, 'VCAP_SERVICES cannot be blank'):
+            _ = _VCAPParser().SERVICES
 
     def test_flags_error_if_VCAP_SERVICES_is_blank(self):
-        self.override(None)
-        config._getservices()
-        self.assertIn('VCAP_SERVICES cannot be blank', config._errors)
+        os.environ['VCAP_SERVICES'] = ''
+
+        with self.assertRaisesRegex(_VCAPParser.Error, 'VCAP_SERVICES cannot be blank'):
+            _ = _VCAPParser().SERVICES
 
     def test_flags_error_if_VCAP_SERVICES_is_malformed(self):
-        self.override('lolwut')
-        config._getservices()
-        self.assertIn('In VCAP_SERVICES: invalid JSON: Expecting value: line 1 column 1 (char 0)',
-                      config._errors)
+        os.environ['VCAP_SERVICES'] = 'lolwut'
+
+        with self.assertRaisesRegex(_VCAPParser.Error, 'in VCAP_SERVICES, JSONDecodeError'):
+            _ = _VCAPParser().SERVICES
 
     def test_flags_error_if_service_name_is_missing(self):
-        self.override(
-            """
+        os.environ['VCAP_SERVICES'] = """
             {
               "user-provided": [
                 {
@@ -200,6 +123,7 @@ class ConfigureGetServices(unittest.TestCase):
                 }
               ]
             }
-            """)
-        self.assertEqual({}, config._getservices())
-        self.assertIn("In VCAP_SERVICES: some entry is missing property 'name'", config._errors)
+            """
+
+        with self.assertRaisesRegex(_VCAPParser.Error, 'VCAP_SERVICES, KeyError: \'name\''):
+            _ = _VCAPParser().SERVICES

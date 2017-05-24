@@ -13,7 +13,7 @@
 
 import unittest.mock
 
-from bfapi.db import scenes as scenesdb
+from beachfront.db import scenes as scenesdb
 
 
 class InsertTest(unittest.TestCase):

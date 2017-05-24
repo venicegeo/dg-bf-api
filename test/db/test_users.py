@@ -13,7 +13,7 @@
 
 import unittest.mock
 
-from bfapi.db import users as usersdb
+from beachfront.db import users as usersdb
 
 
 class SelectUserTest(unittest.TestCase):

@@ -13,7 +13,7 @@
 
 import unittest.mock
 
-from bfapi.db import jobs as jobsdb
+from beachfront.db import jobs as jobsdb
 
 
 class DeleteJobUserTest(unittest.TestCase):
