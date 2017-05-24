@@ -19,17 +19,19 @@ import logging
 from beachfront.services import users
 
 
-def login_callback():
-    query_params = flask.request.args
+def login():
+    username = flask.request.form.get('username', '').strip()
+    if not username:
+        return 'Cannot log in: missing username'
 
-    auth_code = query_params.get('code', '').strip()
-    if not auth_code:
-        return 'Cannot log in: invalid "code" query parameter', 400
+    password = flask.request.form.get('password', '').strip()
+    if not password:
+        return 'Cannot log in: missing password'
 
     try:
-        user = users.authenticate_via_geoaxis(auth_code)
-    except users.GeoAxisError as err:
-        return 'Cannot log in: {}'.format(err), 500
+        user = users.authenticate_via_password(username, password)
+    except users.Unauthorized:
+        return 'Cannot log in: credentials rejected', 401
     except users.Error:
         return 'Cannot log in: an internal error prevents authentication', 500
 
@@ -37,23 +39,10 @@ def login_callback():
     flask.session['api_key'] = user.api_key
     flask.session['csrf_token'] = os.urandom(32).hex()
 
-    response = flask.redirect(flask.url_for('ui'))
+    response = flask.make_response()
     response.set_cookie('csrf_token', flask.session['csrf_token'])
 
     return response
-
-
-def login():
-    return flask.render_template('login.jinja2',
-                                 oauth_url=users.create_oauth_url())
-
-
-def ui():
-    if not _is_logged_in():
-        return flask.redirect(flask.url_for('login'))
-
-    return flask.render_template('ui.jinja2',
-                                 user=flask.request.user)
 
 
 def logout():
@@ -64,7 +53,7 @@ def logout():
 
     flask.session.clear()
 
-    response = flask.redirect(flask.url_for('login'))
+    response = flask.make_response()
     response.delete_cookie('csrf_token')
 
     return response

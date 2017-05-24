@@ -11,8 +11,26 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-from beachfront.db import Connection, ResultProxy
 import logging
+
+from beachfront.db import Connection, ResultProxy
+
+
+def select_password_hash(
+        conn: Connection,
+        *,
+        user_id: str) -> str:
+    log = logging.getLogger(__name__)
+    log.info('Get user password hash', action='database query record', actee=user_id)
+    query = """
+        SELECT password_hash
+          FROM useraccount
+        WHERE user_id = %(user_id)s
+        """
+    params = {
+        'user_id': user_id,
+    }
+    return conn.execute(query, params).scalar()
 
 
 def select_user(

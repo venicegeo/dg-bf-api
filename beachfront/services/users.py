@@ -16,15 +16,13 @@ import re
 import uuid
 from datetime import datetime
 
+import passlib.hash
+
 from beachfront import db
-from beachfront.config import GEOAXIS_HOST, GEOAXIS_SCHEME, GEOAXIS_CLIENT_ID, GEOAXIS_CLIENT_SECRET, GEOAXIS_REDIRECT_URI
-from beachfront.utils import geoaxis
 
 
 TIMEOUT = 12
-PATTERN_API_KEY = re.compile('^[a-f0-9]{32}$')
-
-_oauth_client = geoaxis.OAuth2Client(GEOAXIS_SCHEME, GEOAXIS_HOST, GEOAXIS_CLIENT_ID, GEOAXIS_CLIENT_SECRET)
+PATTERN_API_KEY = re.compile('^[a-f0-9]{32,}$')
 
 
 class User:
@@ -75,24 +73,21 @@ def authenticate_via_api_key(api_key: str) -> User:
     )
 
 
-def authenticate_via_geoaxis(auth_code: str) -> User:
+def authenticate_via_password(user_id: str, plaintext_password: str) -> User:
     log = logging.getLogger(__name__)
     log.info('Users service auth geoaxis', action='service users auth geoaxis')
 
-    access_token = _oauth_client.request_token(GEOAXIS_REDIRECT_URI, auth_code)
-    profile = _oauth_client.get_profile(access_token)
+    with db.get_connection() as conn:
+        password_hash = db.users.select_password_hash(conn, user_id=user_id)
 
-    user = get_by_id(profile.distinguished_name)
-    if not user:
-        user = _create_user(profile.distinguished_name, profile.commonname)
+    if not passlib.hash.pbkdf2_sha256.verify(plaintext_password, password_hash):
+        raise Unauthorized('Username/password mismatch')
+
+    user = get_by_id(user_id)
 
     log.info('User "%s" has logged in successfully', user.user_id, actor=user.user_id, action='logged in')
 
     return user
-
-
-def create_oauth_url() -> str:
-    return _oauth_client.authorize(GEOAXIS_REDIRECT_URI)
 
 
 def get_by_id(user_id: str) -> User:
@@ -163,9 +158,6 @@ def _create_user(user_id, user_name) -> User:
 class Error(Exception):
     def __init__(self, message: str):
         super().__init__(message)
-
-
-GeoAxisError = geoaxis.Error
 
 
 class MalformedAPIKey(Error):

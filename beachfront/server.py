@@ -29,7 +29,7 @@ def apply_middlewares(app: flask.Flask):
 
 def attach_routes(app: flask.Flask):
     app.add_url_rule(methods=['GET'], rule='/keepalive', view_func=routes.auth.keepalive)
-    app.add_url_rule(methods=['GET'], rule='/login', view_func=routes.auth.login)
+    app.add_url_rule(methods=['POST'], rule='/login', view_func=routes.auth.login)
     app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.auth.logout)
 
     app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
