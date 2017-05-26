@@ -80,8 +80,11 @@ def authenticate_via_password(user_id: str, plaintext_password: str) -> User:
     with db.get_connection() as conn:
         password_hash = db.users.select_password_hash(conn, user_id=user_id)
 
+    if not password_hash:
+        raise Unauthorized('no such user')
+
     if not passlib.hash.pbkdf2_sha256.verify(plaintext_password, password_hash):
-        raise Unauthorized('Username/password mismatch')
+        raise Unauthorized('password mismatch')
 
     user = get_by_id(user_id)
 
