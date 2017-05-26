@@ -123,7 +123,7 @@ class InstallLayerTest(unittest.TestCase):
         self.assertEqual('180.0', xml.findtext('./nativeBoundingBox/maxx'))
         self.assertEqual('90.0', xml.findtext('./nativeBoundingBox/maxy'))
         self.assertEqual('test-layer-id', xml.findtext('./metadata/entry[@key="JDBC_VIRTUAL_TABLE"]/virtualTable/name'))
-        self.assertIn('SELECT * FROM __beachfront__geoserver',
+        self.assertIn('SELECT * FROM geoserver',
                       xml.findtext('./metadata/entry[@key="JDBC_VIRTUAL_TABLE"]/virtualTable/sql'))
 
     def test_throws_on_http_error(self, m: requests_mock.Mocker):

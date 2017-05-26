@@ -31,7 +31,6 @@ class ConfigValueTest(unittest.TestCase):
         self.assertEqual('https', config.GEOSERVER_SCHEME)
         self.assertEqual('https', config.PIAZZA_SCHEME)
         self.assertEqual('https', config.CATALOG_SCHEME)
-        self.assertEqual('https', config.GEOAXIS_SCHEME)
 
 
 class VCAPParserTest(unittest.TestCase):
