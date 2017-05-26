@@ -88,6 +88,10 @@ def csrf_filter():
         log.debug('Allow: method is defined as "SAFE" by RFC2616')
         return
 
+    if _is_public_endpoint(request.path):
+        log.debug('Allow: endpoint is public')
+        return
+
     if not session.get('api_key'):
         log.debug('Allow: no session exists')
         return
