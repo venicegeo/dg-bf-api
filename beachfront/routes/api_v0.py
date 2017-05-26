@@ -86,7 +86,7 @@ def create_job():
     }), 201
 
 
-@blueprint.route('/job/<job_id>', methods=['GET'])
+@blueprint.route('/job/<job_id>.geojson', methods=['GET'])
 def download_geojson(job_id: str):
     try:
         detections = _jobs.get_detections(job_id)

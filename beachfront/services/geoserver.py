@@ -206,7 +206,7 @@ def install_layer(layer_id: str):
                             <virtualTable>
                                 <name>{layer_id}</name>
                                 <sql>
-                                    SELECT * FROM __beachfront__geoserver
+                                    SELECT * FROM geoserver
                                      WHERE ('%jobid%' = '' AND '%productlineid%' = '' AND '%sceneid%' = '')
                                         OR (job_id = '%jobid%')
                                         OR (productline_id = '%productlineid%')
