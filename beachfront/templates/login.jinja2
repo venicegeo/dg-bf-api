@@ -1,0 +1,21 @@
+<html>
+<form method="post">
+    {% if error %}
+    <div class="error">
+        Cannot log in: {{ error }}
+    </div>
+    {% endif %}
+    <label>
+        Username
+        <input type="text" name="username" value="{{ username|escape }}"/>
+    </label>
+    <label>
+        Password
+        <input type="password" name="password" value=""/>
+    </label>
+
+    <button>
+        Log In
+    </button>
+</form>
+</html>
