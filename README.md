@@ -64,6 +64,22 @@ From the terminal, execute:
 You should be prompted to create development environment.
 
 
+## User management
+
+```bash
+
+# Add a user
+./scripts/user-admin-cli.sh add nancy_newuser "Nancy Newuser"
+
+# Reset someone's password
+./scripts/user-admin-cli.sh reset forget_fulfred
+
+# List all known users
+./scripts/user-admin-cli.sh list
+
+```
+
+
 ## Running unit tests
 
 From the terminal, execute:

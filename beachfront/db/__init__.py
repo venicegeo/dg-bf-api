@@ -60,7 +60,7 @@ def print_diagnostics(err: DatabaseError):
         'DatabaseError: {}'.format(err.args[0]),
         '',
         'QUERY',
-        err.statement.rstrip(),
+        err.statement.rstrip() if err.statement else 'N/A',
         '',
         'PARAMS',
         '',
