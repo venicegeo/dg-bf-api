@@ -1,0 +1,50 @@
+@font-face {
+  font-family: 'Catamaran';
+  font-style: normal;
+  font-weight: 200;
+  src: url('./catamaran/Catamaran-ExtraLight.ttf');
+}
+@font-face {
+  font-family: 'Catamaran';
+  font-style: normal;
+  font-weight: 300;
+  src: url('./catamaran/Catamaran-Light.ttf');
+}
+@font-face {
+  font-family: 'Catamaran';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./catamaran/Catamaran-Regular.ttf');
+}
+@font-face {
+  font-family: 'Catamaran';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./catamaran/Catamaran-Bold.ttf');
+}
+
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./inconsolata/Inconsolata-Regular.ttf');
+}
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./inconsolata/Inconsolata-Bold.ttf');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./montserrat/Montserrat-Regular.ttf');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./montserrat/Montserrat-Bold.ttf');
+}

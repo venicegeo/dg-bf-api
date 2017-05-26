@@ -21,6 +21,7 @@ from beachfront.services import users
 
 PATTERNS_PUBLIC_ENDPOINTS = (
     re.compile(r'^/$'),
+    re.compile(r'^/static/'),
     re.compile(r'^/favicon.ico$'),
     re.compile(r'^/login/temporary_auth$'),
     re.compile(r'^/v0/scene/[^/]+.TIF$'),

@@ -1,21 +1,162 @@
 <html>
-<form method="post">
-    {% if error %}
-    <div class="error">
-        Cannot log in: {{ error }}
-    </div>
-    {% endif %}
-    <label>
-        Username
-        <input type="text" name="username" value="{{ username|escape }}"/>
-    </label>
-    <label>
-        Password
-        <input type="password" name="password" value=""/>
-    </label>
+<style>
+    @import "{{ url_for('static', filename='webfonts/index.css') }}";
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        font-family: Catamaran, sans-serif;
+        font-size: 14px;
+    }
 
-    <button>
-        Log In
-    </button>
+    form {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0 auto;
+        border-radius: 3px;
+        background-color: #fff;
+    }
+
+    header,
+    main,
+    footer {
+        padding: 30px calc(50% - 300px);
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        font-size: 3em;
+        font-family: Montserrat;
+    }
+
+    .brand {
+        margin-right: .25em;
+        width: 1em;
+        height: 1em;
+    }
+
+    .brand__outline {
+        fill: white;
+    }
+
+    .brand__left {
+        fill: #49CA3B;
+    }
+
+    .brand__right {
+        fill: #2F82FF;
+    }
+
+    main {
+        background-color: #eee;
+        box-shadow:
+            inset 0 1px rgba(0,0,0,.08),
+            inset 0 10px rgba(0,0,0,.08),
+            inset 0 -1px rgba(0,0,0,.08);
+    }
+
+    .has-error {
+        background-color: #f04;
+        color: white;
+    }
+
+    .errorMessage {
+        margin-bottom: 30px;
+        font-size: 1.5em;
+    }
+
+    .fields {
+        display: flex;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    label + label {
+        margin-left: .5em;
+    }
+
+    input {
+        margin-top: .5em;
+        padding: .5em;
+        border: 1px solid #ccc;
+        font-family: inherit;
+        font-size: 14px;
+        border-radius: 3px;
+        background-color: white;
+        color: #555;
+        box-shadow: 0 2px rgba(0,0,0,.1);
+        outline: none;
+    }
+
+    input:focus {
+        border-color: #777;
+    }
+
+    .has-error input {
+        border-color: transparent;
+    }
+
+    button {
+        padding: 1em;
+        width: 200px;
+        border: none;
+        border-radius: 3px;
+        box-shadow: 0 3px hsl(114, 52%, 43%);
+        background-color: hsl(114, 57%, 51%);
+        color: white;
+        cursor: pointer;
+        font-family: Montserrat;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background-color: hsl(114, 52%, 48%);
+        box-shadow: 0 3px hsl(114, 52%, 43%);
+    }
+
+</style>
+<form method="post">
+    <header>
+        <svg class="brand" viewBox="0 0 150 150">
+            <circle class="brand__outline" cx="75" cy="75" r="75"/>
+            <path class="brand__left" d="M75,135 C108.137085,135 135,108.137085 135,75 C135,41.862915 108.137085,15 75,15 C75,75 75,75 75,135 Z"/>
+            <path class="brand__right" d="M75,135 L75,15 C41.862915,15 15,41.862915 15,75 C15,108.137085 41.862915,135 75,135 Z"/>
+        </svg>
+        <span>CoastLine</span>
+    </header>
+
+    <main{% if error %} class="has-error"{% endif %}>
+        {% if error %}
+            <div class="errorMessage">
+                Cannot log in: {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="fields">
+            <label>
+                Username
+                <input type="text" name="username" value="{{ username|escape }}"/>
+            </label>
+            <label>
+                Password
+                <input type="password" name="password"/>
+            </label>
+        </div>
+    </main>
+
+    <footer>
+        <button>
+            {{ "Retry Log In" if error else "Log Me In!" }}
+        </button>
+    </footer>
 </form>
 </html>
