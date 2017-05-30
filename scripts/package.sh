@@ -21,16 +21,6 @@ FILE_LIST="
 
 ################################################################################
 
-echo -e "\nCollecting Python dependencies\n"
-
-(
-    . $VIRTUALENV_ROOT/bin/activate
-    mkdir -p vendor
-    pip install -d vendor -r requirements.txt
-)
-
-################################################################################
-
 echo -e "\nBuilding archive\n"
 
 rm -f $ARCHIVE_FILENAME
