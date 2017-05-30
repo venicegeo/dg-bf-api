@@ -9,7 +9,7 @@ node {
         ])
     }
 
-    stage 'Test' {
+    stage('Test') {
         sh 'echo y | ./scripts/test.sh'
     }
 
@@ -22,7 +22,7 @@ node {
         cfBgDeploy()
     }
 
-    stage ('Cleanup') {
+    stage('Cleanup') {
         deleteDir()
     }
 }
