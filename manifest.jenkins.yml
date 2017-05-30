@@ -2,7 +2,7 @@
 applications:
 - name: coastline-api
   host: coastline-api
-  path: coastline-api.zip
+  path: beachfront.zip
   memory: 1G
   disk_quota: 1G
   instances: 1
