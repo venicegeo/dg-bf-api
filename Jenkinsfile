@@ -4,7 +4,7 @@ node {
 
     stage('Setup') {
         git([
-            url: 'https://github.com/venicegeo/bf-api.git',
+            url: 'https://github.com/venicegeo/dg-bf-api.git',
             branch: 'master'
         ])
     }
