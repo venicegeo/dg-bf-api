@@ -1,4 +1,6 @@
-node ('python35') {
+@Library('pipelib@master') _
+
+node {
 
     stage('Setup') {
         git([
