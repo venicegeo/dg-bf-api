@@ -94,11 +94,13 @@ From the terminal, execute:
 1. From the terminal, execute:
 
 ```bash
+./scripts/package.sh
+
 export MANIFEST_OUTFILE=manifest.foo.yml
 export PIAZZA_HOST=...
 export PIAZZA_AUTH=...
 export CATALOG_HOST=...
-./scripts/build-manifest.sh
+./scripts/create-cf-manifest.sh
 
 cf push -f $MANIFEST_OUTFILE
 ```
