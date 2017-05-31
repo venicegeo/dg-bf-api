@@ -15,6 +15,36 @@ echo ###########################################################################
 
 piazza_url=https://$PIAZZA_HOST/v2/key
 
+
+
+# HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
+# FIXME -- remove this when the SSL cert SubjectAltName problem is fixed
+function curl() {
+    echo "
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        WARNING
+
+        curl is about to be invoked without SSL verification on URL:
+
+            '$(echo $@ | grep -Eo "https?://[^ ]+")'
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    " | sed 's/^        //g' > /dev/stderr
+
+    echo -en "\nPausing for effect" > /dev/stderr
+    for n in {1..5}; do
+        echo -n . > /dev/stderr
+        sleep 1
+    done
+    echo -en '\r                           \r' > /dev/stderr
+
+    /usr/bin/curl --insecure "$@"
+}
+# HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
+
+
+
 curl "https://${PIAZZA_HOST}" -fs >/dev/null || { echo "Error: Piazza is unreachable"; exit 1; }
 
 echo "Requesting new Piazza API key via '$piazza_url'"
