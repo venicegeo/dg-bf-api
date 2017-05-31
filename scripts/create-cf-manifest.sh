@@ -30,14 +30,14 @@ function curl() {
             '$(echo $@ | grep -Eo "https?://[^ ]+")'
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    " | sed 's/^        //g' > /dev/stderr
+    " | sed 's/^        //g' >&2
 
-    echo -en "\nPausing for effect" > /dev/stderr
+    echo -en "\nPausing for effect" >&2
     for n in {1..5}; do
-        echo -n . > /dev/stderr
+        echo -n . >&2
         sleep 1
     done
-    echo -en '\r                           \r' > /dev/stderr
+    echo -en '\r                           \r' >&2
 
     /usr/bin/curl --insecure "$@"
 }
