@@ -112,10 +112,6 @@ cf push -f $MANIFEST_OUTFILE
 | `DEBUG_MODE`           | Set to `1` to start the server in debug mode.  Note that this will have some fairly noisy logs. |
 | `DOMAIN`                | Overrides the domain where the other services can be found (automatically injected by PCF) |
 | `CATALOG_HOST`          | Beachfront Image Catalog hostname. |
-| `GEOAXIS_CLIENT_ID`     | GEOAxIS OAuth client ID. |
-| `GEOAXIS_CLIENT_SECRET` | GEOAxIS OAuth secret. |
-| `GEOAXIS_HOST`          | GEOAxIS hostname. |
-| `GEOAXIS_REDIRECT_URI`  | GEOAxIS OAuth redirect URI. |
 | `MUTE_LOGS`             | Set to `1` to mute the logs (happens by default in test mode) |
 | `PIAZZA_HOST`           | Piazza hostname. |
 | `PIAZZA_API_KEY`        | Credentials for accessing Piazza. |
