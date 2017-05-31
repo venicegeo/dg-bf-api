@@ -34,7 +34,7 @@ if [ ! -d "$VIRTUALENV_ROOT" -o ! -f "$ENVIRONMENT_FILE" ]; then
         exit 1
     fi
 
-    virtualenv --python=/usr/bin/python3 $VIRTUALENV_ROOT
+    virtualenv --python=python3 $VIRTUALENV_ROOT
 
     . $VIRTUALENV_ROOT/bin/activate
 
