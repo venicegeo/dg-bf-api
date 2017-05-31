@@ -17,6 +17,24 @@ node {
         sh 'echo y | ./scripts/package.sh'
     }
 
+    stage('Create CloudFoundry manifest') {
+        def props = readProperties(file: 'jenkins.properties')
+
+        withEnv([
+            "MANIFEST_OUTFILE=${props.get('cfManifest')}",
+            "CATALOG_HOST=bf-ia-broker.${props.get('cfDomain')}",
+            "PIAZZA_HOST=piazza.${props.get('cfDomain')}"
+        ]) {
+            withCredentials([[
+                $class: 'UsernamePasswordBinding',
+                credentialsId: 'beachfront-piazza-npe',
+                variable: 'PIAZZA_AUTH'
+            ]]) {
+                sh 'echo y | ./scripts/create-cf-manifest.sh'
+            }
+        }
+    }
+
     stage('Deploy') {
         cfPush()
         cfBgDeploy()

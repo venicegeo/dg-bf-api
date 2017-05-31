@@ -89,15 +89,18 @@ From the terminal, execute:
 ```
 
 
-## Deploying
+## Deploying Manually
 
-1. Either run `./scripts/package.sh`, then `cf push` with appropriate flags or use
-the normal CI build pipeline to deploy to PCF.
-2. Provide any required credentials to the running instance via the PCF web management
-portal, or from the terminal, ala:
+1. From the terminal, execute:
 
 ```bash
-cf set-env beachfront PIAZZA_API_KEY <valid Piazza API key>
+export MANIFEST_OUTFILE=manifest.foo.yml
+export PIAZZA_HOST=...
+export PIAZZA_AUTH=...
+export CATALOG_HOST=...
+./scripts/build-manifest.sh
+
+cf push -f $MANIFEST_OUTFILE
 ```
 
 
