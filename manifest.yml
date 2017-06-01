@@ -8,7 +8,7 @@ applications:
   instances: 1
   buildpack: python_buildpack
   services:
-    - pz-postgis
+    - pz-postgres
     - pz-geoserver-efs
   env:
     CONFIG: production
