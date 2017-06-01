@@ -1,7 +1,7 @@
-# beachfront
+# dg-bf-api
 
-> API service for the Beachfront project. This is the central point of interaction
-> for the Beachfront front-end.
+> API service for the CoastLine project. This is the central point of interaction
+> for the CoastLine front-end.
 
 
 ## Running locally for development
@@ -113,7 +113,7 @@ cf push -f $MANIFEST_OUTFILE
 | `CONFIG`                | Defines which configuration to load when starting the server (e.g., `development`, `production`). |
 | `DEBUG_MODE`           | Set to `1` to start the server in debug mode.  Note that this will have some fairly noisy logs. |
 | `DOMAIN`                | Overrides the domain where the other services can be found (automatically injected by PCF) |
-| `CATALOG_HOST`          | Beachfront Image Catalog hostname. |
+| `CATALOG_HOST`          | CoastLine Image Catalog hostname. |
 | `MUTE_LOGS`             | Set to `1` to mute the logs (happens by default in test mode) |
 | `PIAZZA_HOST`           | Piazza hostname. |
 | `PIAZZA_API_KEY`        | Credentials for accessing Piazza. |

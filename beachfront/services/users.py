@@ -63,7 +63,7 @@ def authenticate_via_api_key(api_key: str) -> User:
 
     if not row:
         log.error('Unauthorized API key "%s"', api_key)
-        raise Unauthorized('Beachfront API key is not active')
+        raise Unauthorized('CoastLine API key is not active')
 
     return User(
         user_id=row['user_id'],
