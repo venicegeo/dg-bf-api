@@ -40,11 +40,9 @@ node {
 		cfPush()
         	cfBgDeploy()
 	} finally {
-		stage('Cleanup')
+		stage('Cleanup') {
+			deleteDir()
+		}
 	}
-    }
-
-    stage('Cleanup') {
-        deleteDir()
     }
 }
