@@ -16,11 +16,11 @@ from .base import *
 
 
 DATABASE_URI = 'postgres://{username}:{password}@{host}:{port}/{database}'.format(
-    host=_utils.VCAP.SERVICES['pz-postgres.credentials.hostname'],
-    port=_utils.VCAP.SERVICES['pz-postgres.credentials.port'],
-    database=_utils.VCAP.SERVICES['pz-postgres.credentials.database'],
-    username=_utils.VCAP.SERVICES['pz-postgres.credentials.username'],
-    password=_utils.VCAP.SERVICES['pz-postgres.credentials.password'],
+    host=_utils.VCAP.SERVICES['pz-postgres.hostname'],
+    port=_utils.VCAP.SERVICES['pz-postgres.port'],
+    database=_utils.VCAP.SERVICES['pz-postgres.database'],
+    username=_utils.VCAP.SERVICES['pz-postgres.username'],
+    password=_utils.VCAP.SERVICES['pz-postgres.password'],
 )
 
 SECRET_KEY  = os.urandom(32).hex()
