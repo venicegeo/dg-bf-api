@@ -8,8 +8,8 @@ applications:
   instances: 1
   buildpack: python_buildpack
   services:
-    - postgis
-    - geoserver
+    - pz-postgis
+    - pz-geoserver-efs
   env:
     CONFIG: production
     CATALOG_HOST: ~
