@@ -80,7 +80,7 @@ class ListAllTest(unittest.TestCase):
 
     def test_discards_services_missing_max_cloud_cover(self, mock: MagicMock):
         service = create_service()
-        service.metadata['metadata'].pop('ImgReq - cloudCover')
+        service.metadata['metadata'].pop('ImgReq-cloudCover')
         mock.return_value = [service]
         self.assertEqual([], algorithms.list_all())
 
@@ -98,7 +98,7 @@ class ListAllTest(unittest.TestCase):
 
     def test_discards_services_with_invalid_max_cloud_cover(self, mock: MagicMock):
         service = create_service()
-        service.metadata['metadata']['ImgReq - cloudCover'] = 'lolwut'
+        service.metadata['metadata']['ImgReq-cloudCover'] = 'lolwut'
         mock.return_value = [service]
         self.assertEqual([], algorithms.list_all())
 
@@ -163,7 +163,7 @@ class GetTest(unittest.TestCase):
 
     def test_throws_if_missing_max_cloud_cover(self, mock: MagicMock):
         service = create_service()
-        service.metadata['metadata'].pop('ImgReq - cloudCover')
+        service.metadata['metadata'].pop('ImgReq-cloudCover')
         mock.return_value = service
         with self.assertRaisesRegex(algorithms.ValidationError, 'missing `cloudCover`'):
             algorithms.get('test-service-id')
@@ -184,7 +184,7 @@ class GetTest(unittest.TestCase):
 
     def test_throws_if_with_invalid_max_cloud_cover(self, mock: MagicMock):
         service = create_service()
-        service.metadata['metadata']['ImgReq - cloudCover'] = 'lolwut'
+        service.metadata['metadata']['ImgReq-cloudCover'] = 'lolwut'
         mock.return_value = service
         with self.assertRaisesRegex(algorithms.ValidationError, 'not a number'):
             algorithms.get('test-service-id')
@@ -204,8 +204,8 @@ def create_service(service_id: str = 'test-service-id'):
         description='test-description',
         metadata={
             'metadata': {
-                'ImgReq - bands': 'test-band1,test-band2',
-                'ImgReq - cloudCover': '42',
+                'ImgReq-bands': 'test-band1,test-band2',
+                'ImgReq-cloudCover': '42',
                 'Interface': 'test-interface',
             },
             'version': 'test-version',

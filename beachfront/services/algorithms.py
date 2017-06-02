@@ -118,7 +118,7 @@ def get(service_id: str) -> Algorithm:
 #
 
 def _extract_bands(service: piazza.ServiceDescriptor) -> tuple:
-    value = service.metadata['metadata'].get('ImgReq - bands')
+    value = service.metadata['metadata'].get('ImgReq-bands')
     if not value:
         raise ValidationError('missing `bands` requirement')
     return tuple(s.strip().lower() for s in value.split(','))
@@ -136,7 +136,7 @@ def _extract_interface(service: piazza.ServiceDescriptor) -> str:
 
 
 def _extract_max_cloud_cover(service: piazza.ServiceDescriptor) -> int:
-    value = service.metadata['metadata'].get('ImgReq - cloudCover')
+    value = service.metadata['metadata'].get('ImgReq-cloudCover')
     if not value:
         raise ValidationError('missing `cloudCover` requirement')
     try:
