@@ -34,10 +34,10 @@ class InstallIfNeededTest(unittest.TestCase):
         geoserver.install_if_needed()
 
         self.assertEqual([
-            'https://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront',
-            'https://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront/datastores/postgres',
-            'https://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
-            'https://vcap-geoserver.test.localdomain/geoserver/rest/styles/detections',
+            'http://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront',
+            'http://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront/datastores/postgres',
+            'http://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
+            'http://vcap-geoserver.test.localdomain/geoserver/rest/styles/detections',
         ], [h.url for h in m.request_history])
 
     def test_sends_correct_credentials(self, m: requests_mock.Mocker):
@@ -103,7 +103,7 @@ class InstallLayerTest(unittest.TestCase):
     def test_calls_correct_url(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/workspaces/beachfront/datastores/postgres/featuretypes', status_code=201)
         geoserver.install_layer('test-layer-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront/datastores/postgres/featuretypes',
+        self.assertEqual('http://vcap-geoserver.test.localdomain/geoserver/rest/workspaces/beachfront/datastores/postgres/featuretypes',
                          m.request_history[0].url)
 
     def test_sends_correct_credentials(self, m: requests_mock.Mocker):
@@ -145,14 +145,14 @@ class InstallStyleTest(unittest.TestCase):
         m.post('/geoserver/rest/styles')
         m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/styles?name=test-style-id',
+        self.assertEqual('http://vcap-geoserver.test.localdomain/geoserver/rest/styles?name=test-style-id',
                          m.request_history[0].url)
 
     def test_calls_correct_url_when_setting_default_style(self, m: requests_mock.Mocker):
         m.post('/geoserver/rest/styles')
         m.put('/geoserver/rest/layers/all_detections')
         geoserver.install_style('test-style-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
+        self.assertEqual('http://vcap-geoserver.test.localdomain/geoserver/rest/layers/all_detections',
                          m.request_history[1].url)
 
     def test_sends_correct_credentials_when_creating_sld(self, m: requests_mock.Mocker):
@@ -212,7 +212,7 @@ class LayerExistsTest(unittest.TestCase):
     def test_calls_correct_url(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/layers/test-layer-id')
         geoserver.layer_exists('test-layer-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/layers/test-layer-id', m.request_history[0].url)
+        self.assertEqual('http://vcap-geoserver.test.localdomain/geoserver/rest/layers/test-layer-id', m.request_history[0].url)
 
     def test_sends_correct_credentials(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/layers/test-layer-id')
@@ -239,7 +239,7 @@ class StyleExistsTest(unittest.TestCase):
     def test_calls_correct_url(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/styles/test-style-id')
         geoserver.style_exists('test-style-id')
-        self.assertEqual('https://vcap-geoserver.test.localdomain/geoserver/rest/styles/test-style-id', m.request_history[0].url)
+        self.assertEqual('http://vcap-geoserver.test.localdomain/geoserver/rest/styles/test-style-id', m.request_history[0].url)
 
     def test_sends_correct_credentials(self, m: requests_mock.Mocker):
         m.get('/geoserver/rest/styles/test-style-id')

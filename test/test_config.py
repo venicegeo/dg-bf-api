@@ -27,8 +27,8 @@ class ConfigValueTest(unittest.TestCase):
     def test_running_production_configuration(self):
         self.assertEqual('production', os.getenv('CONFIG'))
 
-    def test_all_schemes_set_to_https(self):
-        self.assertEqual('https', config.GEOSERVER_SCHEME)
+    def test_all_schemes_properly_configured(self):
+        self.assertEqual('http', config.GEOSERVER_SCHEME)
         self.assertEqual('https', config.PIAZZA_SCHEME)
         self.assertEqual('https', config.CATALOG_SCHEME)
 
