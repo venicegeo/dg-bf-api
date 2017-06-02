@@ -32,7 +32,7 @@ PIAZZA_SCHEME  = 'https'
 PIAZZA_HOST    = os.getenv('PIAZZA_HOST')
 PIAZZA_API_KEY = os.getenv('PIAZZA_API_KEY')
 
-GEOSERVER_SCHEME   = 'https'
+GEOSERVER_SCHEME   = 'http'
 GEOSERVER_HOST     = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.hostname']
 GEOSERVER_USERNAME = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.username']
 GEOSERVER_PASSWORD = _utils.VCAP.SERVICES['pz-geoserver-efs.credentials.password']
