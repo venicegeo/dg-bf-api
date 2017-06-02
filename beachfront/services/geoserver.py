@@ -120,7 +120,7 @@ def install_datastore():
                 database_host=database_uri.hostname,
                 database_port=database_uri.port,
                 database_username=database_uri.username,
-                database_password=database_uri.password,
+                database_password=urllib.parse.unquote_plus(database_uri.password),
             )
         )
         log.debug('Sent request to geoserver:\n'
