@@ -11,6 +11,8 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+from urllib.parse import quote_plus as _urlquote
+
 from . import _utils
 from .base import *
 
@@ -20,7 +22,7 @@ DATABASE_URI = 'postgres://{username}:{password}@{host}:{port}/{database}'.forma
     port=_utils.VCAP.SERVICES['pz-postgres.credentials.port'],
     database=_utils.VCAP.SERVICES['pz-postgres.credentials.database'],
     username=_utils.VCAP.SERVICES['pz-postgres.credentials.username'],
-    password=_utils.VCAP.SERVICES['pz-postgres.credentials.password'],
+    password=_urlquote(_utils.VCAP.SERVICES['pz-postgres.credentials.password']),
 )
 
 SECRET_KEY  = os.urandom(32).hex()
