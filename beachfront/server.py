@@ -34,9 +34,13 @@ def attach_routes(app: flask.Flask):
 
     app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
 
+    @app.route('/favicon.ico')
     def favicon():
         return flask.redirect(flask.url_for('static', filename='favicon-dev.png'))
-    app.add_url_rule('/favicon.ico', view_func=favicon)
+
+    @app.route('/')
+    def health_check():
+        return 'Hello'
 
     flask_cors.CORS(app, max_age=1200, supports_credentials=True)
 
