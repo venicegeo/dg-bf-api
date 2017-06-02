@@ -29,6 +29,33 @@ def create_wms_url():
     return '{}://{}/geoserver/wms'.format(GEOSERVER_SCHEME, GEOSERVER_HOST)
 
 
+def get_wms_tile(params: dict):
+    log = logging.getLogger(__name__ + '.geoserver_wms')
+
+    url = '{}://{}/geoserver/wms'.format(GEOSERVER_SCHEME, GEOSERVER_HOST)
+
+    log.info('Forwarding request to "%s"', url)
+    try:
+        response = requests.get(url, params, stream=True)
+    except requests.ConnectionError as err:
+        log.error('Connection to GeoServer failed: %s\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  '---',
+                  err, err.request.url)
+        raise Unreachable()
+
+    if response.status_code != 200:
+        log.error('GeoServer returned HTTP %s:\n'
+                  '---\n\n'
+                  'URL: %s\n\n'
+                  '---',
+                  response.status_code, response.request.url)
+        raise Error('GeoServer returned HTTP {}'.format(response.status_code))
+
+    return response.iter_content(chunk_size=8192), response.headers.get('Content-Type')
+
+
 def install_if_needed():
     log = logging.getLogger(__name__)
 
@@ -452,5 +479,14 @@ def workspace_exists() -> bool:
 # Errors
 #
 
-class InstallError(Exception):
+
+class Error(Exception):
+    pass
+
+
+class InstallError(Error):
+    pass
+
+
+class Unreachable(Error):
     pass

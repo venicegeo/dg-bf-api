@@ -247,7 +247,7 @@ def get_user_data():
         },
         'services': {
             'catalog': _scenes.create_catalog_url(),
-            'wms_server': _geoserver.create_wms_url(),
+            'wms_server': flask.request.host_url + 'wms',
         },
     })
 

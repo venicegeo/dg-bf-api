@@ -30,6 +30,7 @@ def apply_middlewares(app: flask.Flask):
 def attach_routes(app: flask.Flask):
     app.add_url_rule(methods=['POST', 'GET'], rule='/login/temporary_auth', view_func=routes.auth.login)
     app.add_url_rule(methods=['GET'], rule='/logout', view_func=routes.auth.logout)
+    app.add_url_rule(methods=['GET'], rule='/wms', view_func=routes.wms.wms_proxy)
 
     app.register_blueprint(routes.api_v0.blueprint, url_prefix='/v0')
 

@@ -11,4 +11,16 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-from beachfront.routes import auth, api_v0, wms
+import flask
+
+from ..services import geoserver
+
+
+def wms_proxy():
+    try:
+        content, content_type = geoserver.get_wms_tile(dict(flask.request.args))
+        return flask.Response(content, content_type=content_type)
+    except geoserver.Unreachable:
+        return 'Error: GeoServer is unreachable', 502
+    except geoserver.Error:
+        return 'Error: GeoServer communication failed', 500
