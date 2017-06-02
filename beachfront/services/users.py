@@ -75,7 +75,8 @@ def authenticate_via_api_key(api_key: str) -> User:
 
 def authenticate_via_password(user_id: str, plaintext_password: str) -> User:
     log = logging.getLogger(__name__)
-    log.info('Users service auth geoaxis', action='service users auth geoaxis')
+
+    user_id = user_id.lower()
 
     with db.get_connection() as conn:
         password_hash = db.users.select_password_hash(conn, user_id=user_id)

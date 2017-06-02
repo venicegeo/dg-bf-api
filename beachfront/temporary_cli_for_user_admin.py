@@ -19,6 +19,7 @@ def cli():
 @click.argument('user_id')
 @click.argument('full_name')
 def add(user_id, full_name):
+    user_id = user_id.lower()
     api_key = _create_api_key()
     password = _create_password()
 
@@ -45,6 +46,7 @@ def add(user_id, full_name):
 @cli.command()
 @click.argument('user-id')
 def reset(user_id):
+    user_id = user_id.lower()
     api_key = _create_api_key()
     password = _create_password()
 
