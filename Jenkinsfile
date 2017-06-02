@@ -25,7 +25,7 @@ node {
 
             ./.cloudfoundry/python/bin/python -m beachfront.temporary_cli_for_user_admin "$@"
         '''
-        sh 'zip beachfront.zip user-admin-cli.sh'
+        sh 'zip beachfront.zip users.sh'
         // HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
     }
 
