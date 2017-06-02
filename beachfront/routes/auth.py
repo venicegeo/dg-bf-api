@@ -18,6 +18,7 @@ import urllib.parse
 import flask
 import logging
 
+from beachfront.config import DOMAIN
 from beachfront.services import users
 
 
@@ -80,11 +81,17 @@ def _is_logged_in():
 
 
 def _get_cookie_domain():
+    log = logging.getLogger(__name__)
+
     hostname = flask.request.host.split(':')[0]
 
+    log.info('Determining cookie domain for hostname "%s"', hostname)
+
     if hostname.count('.') < 2:
+        log.info('Same domain')
         return None  # Same domain
 
+    log.info('Parent domain')
     return hostname.split('.', 1)[1]  # Parent domain
 
 
