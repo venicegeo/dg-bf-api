@@ -107,7 +107,7 @@ def _create_api_key():
 
 
 def _create_password():
-    return ''.join(random.choices(string.ascii_letters, k=40))
+    return ''.join(random.sample(string.ascii_letters, k=40))
 
 
 def _fail_immediately(message):
