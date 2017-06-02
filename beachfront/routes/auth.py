@@ -56,7 +56,7 @@ def login():
     flask.session['csrf_token'] = os.urandom(32).hex()
 
     response = flask.redirect(return_url)
-    response.set_cookie('csrf_token', flask.session['csrf_token'])
+    response.set_cookie('csrf_token', flask.session['csrf_token'], domain=_get_cookie_domain())
 
     return response
 
@@ -77,6 +77,15 @@ def logout():
 
 def _is_logged_in():
     return hasattr(flask.request, 'user')
+
+
+def _get_cookie_domain():
+    hostname = flask.request.host.split(':')[0]
+
+    if hostname.count('.') < 2:
+        return None  # Same domain
+
+    return hostname.split('.', 1)[1]  # Parent domain
 
 
 def _get_return_url() -> str:
