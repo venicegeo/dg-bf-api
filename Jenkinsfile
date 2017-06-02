@@ -15,6 +15,18 @@ node {
 
     stage('Archive') {
         sh 'echo y | ./scripts/package.sh'
+        // HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
+        writeFile file: 'users.sh', text: '''#!/bin/bash -e
+
+            cd ~/app
+
+            source .profile.d/python.sh
+            export MUTE_LOGS=1
+
+            ./.cloudfoundry/python/bin/python -m beachfront.temporary_cli_for_user_admin "$@"
+        '''
+        sh 'zip beachfront.zip user-admin-cli.sh'
+        // HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
     }
 
     stage('Create CloudFoundry manifest') {
